@@ -1,5 +1,7 @@
 NATIVE_JAVA_CLASSES = org.rocksdb.AbstractComparator\
+	org.rocksdb.AbstractMergeOpr\
 	org.rocksdb.AbstractSlice\
+	org.rocksdb.AssociativeMergeOpr\
 	org.rocksdb.BackupableDB\
 	org.rocksdb.BackupableDBOptions\
 	org.rocksdb.BlockBasedTableConfig\
@@ -10,7 +12,9 @@ NATIVE_JAVA_CLASSES = org.rocksdb.AbstractComparator\
 	org.rocksdb.Comparator\
 	org.rocksdb.ComparatorOptions\
 	org.rocksdb.DBOptions\
+	org.rocksdb.DirectAssociativeMergeOpr\
 	org.rocksdb.DirectComparator\
+	org.rocksdb.DirectMergeOpr\
 	org.rocksdb.DirectSlice\
 	org.rocksdb.FlushOptions\
 	org.rocksdb.Filter\
@@ -18,6 +22,8 @@ NATIVE_JAVA_CLASSES = org.rocksdb.AbstractComparator\
 	org.rocksdb.HashLinkedListMemTableConfig\
 	org.rocksdb.HashSkipListMemTableConfig\
 	org.rocksdb.MergeOperator\
+	org.rocksdb.MergeOpr\
+	org.rocksdb.MergeOprOptions\
 	org.rocksdb.Options\
 	org.rocksdb.PlainTableConfig\
 	org.rocksdb.ReadOptions\
