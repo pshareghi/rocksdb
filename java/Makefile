@@ -1,23 +1,32 @@
 NATIVE_JAVA_CLASSES = org.rocksdb.AbstractComparator\
+	org.rocksdb.AbstractDeque\
+	org.rocksdb.AbstractMergeOpr\
 	org.rocksdb.AbstractSlice\
+	org.rocksdb.AssociativeMergeOpr\
 	org.rocksdb.BackupableDB\
 	org.rocksdb.BackupableDBOptions\
 	org.rocksdb.BlockBasedTableConfig\
 	org.rocksdb.BloomFilter\
+	org.rocksdb.ByteArrayDeque\
 	org.rocksdb.Checkpoint\
 	org.rocksdb.ColumnFamilyHandle\
 	org.rocksdb.ColumnFamilyOptions\
 	org.rocksdb.Comparator\
 	org.rocksdb.ComparatorOptions\
 	org.rocksdb.DBOptions\
+	org.rocksdb.DirectAssociativeMergeOpr\
 	org.rocksdb.DirectComparator\
+	org.rocksdb.DirectMergeOpr\
 	org.rocksdb.DirectSlice\
+	org.rocksdb.DirectSliceDeque\
 	org.rocksdb.FlushOptions\
 	org.rocksdb.Filter\
 	org.rocksdb.GenericRateLimiterConfig\
 	org.rocksdb.HashLinkedListMemTableConfig\
 	org.rocksdb.HashSkipListMemTableConfig\
 	org.rocksdb.MergeOperator\
+	org.rocksdb.MergeOpr\
+	org.rocksdb.MergeOprOptions\
 	org.rocksdb.Options\
 	org.rocksdb.PlainTableConfig\
 	org.rocksdb.ReadOptions\
@@ -28,6 +37,7 @@ NATIVE_JAVA_CLASSES = org.rocksdb.AbstractComparator\
 	org.rocksdb.RocksIterator\
 	org.rocksdb.SkipListMemTableConfig\
 	org.rocksdb.Slice\
+	org.rocksdb.SliceDeque\
 	org.rocksdb.Statistics\
 	org.rocksdb.TransactionLogIterator\
 	org.rocksdb.TtlDB\

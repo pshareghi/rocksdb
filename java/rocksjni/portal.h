@@ -11,6 +11,7 @@
 #define JAVA_ROCKSJNI_PORTAL_H_
 
 #include <jni.h>
+#include <deque>
 #include <limits>
 #include <string>
 #include <vector>
@@ -21,6 +22,8 @@
 #include "rocksdb/utilities/backupable_db.h"
 #include "rocksdb/utilities/write_batch_with_index.h"
 #include "rocksjni/comparatorjnicallback.h"
+#include "rocksjni/associative_mergeopr_jnicallback.h"
+#include "rocksjni/mergeopr_jnicallback.h"
 #include "rocksjni/writebatchhandlerjnicallback.h"
 
 namespace rocksdb {
@@ -102,6 +105,80 @@ class RocksDBExceptionJni {
     assert(mid != nullptr);
 
     env->Throw((jthrowable)env->NewObject(getJClass(env), mid, msg));
+  }
+
+  // Create and throw a java RocksDBException wrapped around the given
+  // java Throwable.
+  static void ThrowNew(JNIEnv* env, const char* msg, jthrowable& cause) {
+    jstring jMsg = env->NewStringUTF(msg);
+
+    // get the constructor id of org.rocksdb.RocksDBException
+    static jmethodID mid = env->GetMethodID(
+        getJClass(env), "<init>",
+        "(Ljava/lang/String;Ljava/lang/Throwable;)V");
+    assert(mid != nullptr);
+
+    env->Throw((jthrowable) env->NewObject(getJClass(env), mid, jMsg, cause));
+  }
+};
+
+
+// The portal class for Java Exceptions
+class ExceptionJni {
+ public:
+  // Get the jclass for the given fully qualified name.
+  // Example className: "java/lang/IllegalArgumentException"
+  static jclass getJClass(JNIEnv* env, const char* className) {
+    jclass jclazz = env->FindClass(className);
+    assert(jclazz != nullptr);
+    return jclazz;
+  }
+
+  // Create and throw a java exception.
+  //
+  // In case className is NULL, then this function will not throw any
+  // exception.
+  static void ThrowNew(JNIEnv* env, const char* className,
+                       const char* message) {
+    if (!className) {
+      return;
+    }
+
+    jstring jMsg = env->NewStringUTF(message);
+
+    // get the java exception class
+    jclass exceptionClazz = getJClass(env, className);
+
+    // get the constructor id of the exception
+    static jmethodID mid = env->GetMethodID(exceptionClazz, "<init>",
+                                            "(Ljava/lang/String;)V");
+    assert(mid != nullptr);
+
+    env->Throw((jthrowable) env->NewObject(exceptionClazz, mid, jMsg));
+  }
+
+  // Create and throw a java exception wrapped around the given
+  // java Throwable as its cause.
+  //
+  // In case className is NULL, then this function will not throw any
+  // exception.
+  static void ThrowNew(JNIEnv* env, const char* className, const char* message,
+                       jthrowable& cause) {
+    if (!className) {
+      return;
+    }
+
+    jstring jMsg = env->NewStringUTF(message);
+
+    // get the java exception class
+    jclass exceptionClazz = getJClass(env, className);
+
+    // get the constructor id of org.rocksdb.RocksDBException
+    static jmethodID mid = env->GetMethodID(
+        exceptionClazz, "<init>", "(Ljava/lang/String;Ljava/lang/Throwable;)V");
+    assert(mid != nullptr);
+
+    env->Throw((jthrowable) env->NewObject(exceptionClazz, mid, jMsg, cause));
   }
 };
 
@@ -323,8 +400,7 @@ class ComparatorOptionsJni : public RocksDBNativeClass<
 
 // The portal class for org.rocksdb.AbstractComparator
 class AbstractComparatorJni : public RocksDBNativeClass<
-    const rocksdb::BaseComparatorJniCallback*,
-    AbstractComparatorJni> {
+    const rocksdb::BaseComparatorJniCallback*, AbstractComparatorJni> {
  public:
   static jclass getJClass(JNIEnv* env) {
     return RocksDBNativeClass::getJClass(env,
@@ -367,6 +443,90 @@ class AbstractComparatorJni : public RocksDBNativeClass<
   }
 };
 
+// The portal class for org.rocksdb.MergeOprOptions
+class MergeOprOptionsJni : public RocksDBNativeClass<
+    rocksdb::MergeOprJniCallbackOptions*, MergeOprOptionsJni> {
+ public:
+  static jclass getJClass(JNIEnv* env) {
+    return RocksDBNativeClass::getJClass(env, "org/rocksdb/MergeOprOptions");
+  }
+};
+
+// The portal class for org.rocksdb.AbstractMergeOpr
+class AbstractMergeOprJni : public RocksDBNativeClass<
+    const rocksdb::BaseMergeOprJniCallback*, AbstractMergeOprJni> {
+ public:
+  static jclass getJClass(JNIEnv* env) {
+    return RocksDBNativeClass::getJClass(env, "org/rocksdb/AbstractMergeOpr");
+  }
+
+  // Get the java method `name` of org.rocksdb.AbstractMergeOpr.
+  static jmethodID getNameMethodId(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env), "name",
+                                            "()Ljava/lang/String;");
+    assert(mid != nullptr);
+    return mid;
+  }
+
+  // Get the java method `fullMerge` of org.rocksdb.AbstractMergeOpr.
+  static jmethodID getFullMergeMethodId(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(
+        getJClass(env), "fullMerge",
+        "(Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;"
+        "Ljava/util/Deque;)[B");
+    assert(mid != nullptr);
+    return mid;
+  }
+
+  // Get the java method `partialMerge` of org.rocksdb.AbstractMergeOpr.
+  static jmethodID getPartialMergeMethodId(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(
+        getJClass(env), "partialMerge",
+        "(Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;"
+        "Lorg/rocksdb/AbstractSlice;)[B");
+    assert(mid != nullptr);
+    return mid;
+  }
+
+  // Get the java method `partialMergeMulti` of org.rocksdb.AbstractMergeOpr.
+  static jmethodID getPartialMergeMultiMethodId(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(
+        getJClass(env), "partialMergeMulti",
+        "(Lorg/rocksdb/AbstractSlice;Ljava/util/Deque;)[B");
+    assert(mid != nullptr);
+    return mid;
+  }
+};
+
+// The portal class for org.rocksdb.AbstractMergeOpr but for dealing with
+// AssociativeMergeOpr and DirectAssociativeMergeOpr
+class AbstractAssociativeMergeOprJni : public RocksDBNativeClass<
+    const rocksdb::BaseAssociativeMergeOprJniCallback*, AbstractMergeOprJni> {
+ public:
+  static jclass getJClass(JNIEnv* env) {
+    return RocksDBNativeClass::getJClass(env, "org/rocksdb/AbstractMergeOpr");
+  }
+
+  // Get the java method `name` of org.rocksdb.AbstractMergeOpr.
+  static jmethodID getNameMethodId(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env), "name",
+                                            "()Ljava/lang/String;");
+    assert(mid != nullptr);
+    return mid;
+  }
+
+  // Get the java method `merge` of
+  // org.rocksdb.AssociativeMergeOpr or DirectAssociativeMergeOpr.
+    static jmethodID getMergeMethodId(JNIEnv* env) {
+      static jmethodID mid = env->GetMethodID(
+          getJClass(env), "merge",
+          "(Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;"
+          "Lorg/rocksdb/AbstractSlice;)[B");
+      assert(mid != nullptr);
+      return mid;
+    }
+};
+
 // The portal class for org.rocksdb.AbstractSlice
 class AbstractSliceJni : public RocksDBNativeClass<
     const rocksdb::Slice*, AbstractSliceJni> {
@@ -407,6 +567,75 @@ class DirectSliceJni {
     assert(mid != nullptr);
     return env->NewObject(getJClass(env), mid);
   }
+};
+
+class ByteArrayDequeJni : public RocksDBNativeClass<
+const std::deque<std::string>*, ByteArrayDequeJni> {
+ public:
+  // Get the java class id of org.rocksdb.ByteArrayDeque.
+  static jclass getJClass(JNIEnv* env) {
+    jclass jclazz = env->FindClass("org/rocksdb/ByteArrayDeque");
+    assert(jclazz != nullptr);
+    return jclazz;
+  }
+
+  static jobject construct0(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env), "<init>", "()V");
+    assert(mid != nullptr);
+    return env->NewObject(getJClass(env), mid);
+  }
+};
+
+class SliceDequeJni : public RocksDBNativeClass<
+const std::deque<rocksdb::Slice>*, SliceDequeJni> {
+ public:
+  // Get the java class id of org.rocksdb.SliceDeque.
+  static jclass getJClass(JNIEnv* env) {
+    jclass jclazz = env->FindClass("org/rocksdb/SliceDeque");
+    assert(jclazz != nullptr);
+    return jclazz;
+  }
+
+  static jobject construct0(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env), "<init>", "()V");
+    assert(mid != nullptr);
+    return env->NewObject(getJClass(env), mid);
+  }
+};
+
+class DirectSliceDequeJni : public RocksDBNativeClass<
+const std::deque<rocksdb::Slice>*, DirectSliceDequeJni> {
+ public:
+  // Get the java class id of org.rocksdb.DircetSliceDeque.
+  static jclass getJClass(JNIEnv* env) {
+    jclass jclazz = env->FindClass("org/rocksdb/DirectSliceDeque");
+    assert(jclazz != nullptr);
+    return jclazz;
+  }
+
+  static jobject construct0(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env), "<init>", "()V");
+    assert(mid != nullptr);
+    return env->NewObject(getJClass(env), mid);
+  }
+};
+
+class StringBuilderJni {
+ public:
+  // Get the java class id of java.util.StringBuilder.
+  static jclass getJClass(JNIEnv* env) {
+    jclass jclazz = env->FindClass("java/util/StringBuilder");
+    assert(jclazz != nullptr);
+    return jclazz;
+  }
+
+  static jobject construct0(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env), "<init>", "()V");
+    assert(mid != nullptr);
+    return env->NewObject(getJClass(env), mid);
+  }
+
+
 };
 
 class ListJni {
@@ -709,6 +938,28 @@ class JniUtil {
       op(key_slice);
 
       env->ReleaseByteArrayElements(jkey, key, JNI_ABORT);
+    }
+
+    /*
+     * Returns a new std::string with the data of the given java byte[]
+     */
+    static std::string* byteArrayToStdString(JNIEnv* env, jbyteArray elem) {
+      const int len = env->GetArrayLength(elem);
+      jbyte* ptrData = new jbyte[len];
+      env->GetByteArrayRegion(elem, 0, len, ptrData);
+      auto str = new std::string((char*) ptrData);
+      return str;
+    }
+
+    /*
+     * Returns a new std::string with the data of the given java byte[]
+     */
+    static jbyteArray stdStringToByteArray(JNIEnv* env,
+                                           const std::string& str) {
+      int len = str.length();
+      jbyteArray elem = env->NewByteArray(len);
+      env->SetByteArrayRegion(elem, 0, len, (jbyte*) str.c_str());
+      return elem;
     }
 };
 

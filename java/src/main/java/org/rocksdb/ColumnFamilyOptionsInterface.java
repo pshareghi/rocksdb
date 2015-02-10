@@ -110,6 +110,8 @@ public interface ColumnFamilyOptionsInterface {
    * @return the instance of the current Object.
    */
   Object setComparator(AbstractComparator<? extends AbstractSlice<?>> comparator);
+  
+  Object setMergeOpr(AbstractMergeOpr mergeOpr);
 
   /**
    * <p>Set the merge operator to be used for merging two merge operands

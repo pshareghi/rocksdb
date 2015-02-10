@@ -21,6 +21,7 @@
  */
 package org.rocksdb.benchmark;
 
+import java.lang.reflect.Constructor;
 import java.lang.Runnable;
 import java.lang.Math;
 import java.io.File;
@@ -41,6 +42,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.rocksdb.*;
 import org.rocksdb.util.SizeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 class Stats {
   int id_;
@@ -380,17 +382,26 @@ public class DbBenchmark {
     long[] keyBuffer_;
   }
 
+
+//  public static AtomicLong readTimes = new AtomicLong();
+
   class ReadRandomTask extends BenchmarkTask {
+    
     public ReadRandomTask(
         int tid, long randSeed, long numEntries, long keyRange) {
       super(tid, randSeed, numEntries, keyRange);
     }
     @Override public void runTask() throws RocksDBException {
+//      readTimes.set(0);
       byte[] key = new byte[keySize_];
       byte[] value = new byte[valueSize_];
       for (long i = 0; i < numEntries_; i++) {
+//        readTimes.incrementAndGet();
+//        System.out.format("Reading entry %d...\n", i);
         getRandomKey(key, keyRange_);
+//        System.out.format("Got key for entry %d...\n", i);
         int len = db_.get(key, value);
+//        System.out.format("Got key for entry %d...\n", i);
         if (len != RocksDB.NOT_FOUND) {
           stats_.found_++;
           stats_.finishedSingleOp(keySize_ + valueSize_);
@@ -420,6 +431,96 @@ public class DbBenchmark {
         if (isFinished()) {
           return;
         }
+      }
+    }
+  }
+  
+  class UpdateRandomTask extends WriteTask {
+    public UpdateRandomTask(
+        int tid, long randSeed, long numEntries, long keyRange,
+        WriteOptions writeOpt) {
+      super(tid, randSeed, numEntries, keyRange, writeOpt, 1);
+    }
+    
+    public UpdateRandomTask(
+        int tid, long randSeed, long numEntries, long keyRange,
+        WriteOptions writeOpt, long maxWritesPerSecond) {
+      super(tid, randSeed, numEntries, keyRange, writeOpt, 1,
+          maxWritesPerSecond);      
+    }
+    
+    @Override protected void getKey(byte[] key, long id, long range) {
+      getRandomKey(key, range);
+    }
+    
+    @Override public void runTask() throws RocksDBException {
+      if (numEntries_ != DbBenchmark.this.num_) {
+        stats_.message_.append(String.format(" (%d ops)", numEntries_));
+      }
+
+      byte[] key = new byte[keySize_];
+      byte[] value = new byte[valueSize_];
+      
+      try {
+        for (long i = 0; i < numEntries_; ++i) {
+          getKey(key, i, keyRange_);
+          byte[] existingValue = db_.get(key);
+          if (existingValue != null) {
+            stats_.found_++;
+          }
+          DbBenchmark.this.gen_.generate(value);
+          byte[] newValue = LongAddMergeOpr.sum(existingValue, value);
+          db_.put(writeOpt_, key, newValue);
+          stats_.finishedSingleOp(keySize_ + valueSize_);
+          writeRateControl(i);
+          if (isFinished()) {
+            return;
+          }
+        }
+      } catch (InterruptedException e) {
+        // thread has been terminated.
+      }
+    }
+  }
+  
+  class MergeRandomTask extends WriteTask {
+    public MergeRandomTask(
+        int tid, long randSeed, long numEntries, long keyRange,
+        WriteOptions writeOpt) {
+      super(tid, randSeed, numEntries, keyRange, writeOpt, 1);
+    }
+    
+    public MergeRandomTask(
+        int tid, long randSeed, long numEntries, long keyRange,
+        WriteOptions writeOpt, long maxWritesPerSecond) {
+      super(tid, randSeed, numEntries, keyRange, writeOpt, 1,
+          maxWritesPerSecond);      
+    }
+    
+    @Override protected void getKey(byte[] key, long id, long range) {
+      getRandomKey(key, range);
+    }
+    
+    @Override public void runTask() throws RocksDBException {
+      if (numEntries_ != DbBenchmark.this.num_) {
+        stats_.message_.append(String.format(" (%d ops)", numEntries_));
+      }
+      byte[] key = new byte[keySize_];
+      byte[] value = new byte[valueSize_];
+      
+      try {
+        for (long i = 0; i < numEntries_; ++i) {
+          getKey(key, i, keyRange_);
+          DbBenchmark.this.gen_.generate(value);
+          db_.merge(writeOpt_, key, value);
+          stats_.finishedSingleOp(keySize_ + valueSize_);
+          writeRateControl(i);
+          if (isFinished()) {
+            return;
+          }
+        }
+      } catch (InterruptedException e) {
+        // thread has been terminated.
       }
     }
   }
@@ -522,6 +623,26 @@ public class DbBenchmark {
                       (Integer)flags_.get(Flag.cache_numshardbits));
       options.setTableFormatConfig(table_options);
     }
+    String builtinMergeOperator = (String)flags_.get(Flag.builtin_merge_operator);
+    if (builtinMergeOperator != null) {
+      options.setMergeOperatorName(builtinMergeOperator);
+    }
+    String mergeOperatorClassName = (String)flags_.get(Flag.merge_operator);
+    if (mergeOperatorClassName != null) {
+      boolean useAdaptiveMutex = (Boolean)flags_.get(Flag.merge_operator_adaptive_mutex);
+      MergeOprOptions mergeOprOptions = new MergeOprOptions();
+      mergeOprOptions.setUseAdaptiveMutex(useAdaptiveMutex);
+      try {
+      Class<?> clazz = Class.forName(mergeOperatorClassName);
+      Constructor<?> constructor = clazz.getConstructor(MergeOprOptions.class);
+      MergeOpr mergeOperator = (MergeOpr) constructor.newInstance(mergeOprOptions);    
+      options.setMergeOpr(mergeOperator);
+      } catch (Exception ex) {
+        throw new RocksDBException(
+            "unable to intantiate the specified merge operator " +
+            mergeOperatorClassName, ex);
+      }
+    }
     options.setWriteBufferSize(
         (Long)flags_.get(Flag.write_buffer_size));
     options.setMaxWriteBufferNumber(
@@ -618,6 +739,13 @@ public class DbBenchmark {
         (String)flags_.get(Flag.compaction_fadvice));
     // available values of fadvice are "NONE", "NORMAL", "SEQUENTIAL", "WILLNEED" for fadvice
     */
+    
+    //////////////Added by pshareghi
+    options.optimizeLevelStyleCompaction(100663296L / 4L);
+    options.setIncreaseParallelism(2);
+    options.setSoftRateLimit(1.1);
+    options.optimizeForPointLookup(10L);
+    
   }
 
   private void run() throws RocksDBException {
@@ -670,10 +798,14 @@ public class DbBenchmark {
           }
           break;
         case "readrandom":
+//          System.out.println("Merge called " + LongAddMergeOpr.calledTimes.get() + " times");
+          System.out.format("Adding %d ReadRandomTasks (threads)...\n", threadNum_);
           for (int t = 0; t < threadNum_; ++t) {
             tasks.add(new ReadRandomTask(
                 currentTaskId++, randSeed_, reads_ / threadNum_, num_));
           }
+          System.out.format("Finished adding ReadRandomTasks.\n");
+          
           break;
         case "readwhilewriting":
           WriteTask writeTask = new WriteRandomTask(
@@ -695,6 +827,14 @@ public class DbBenchmark {
           destroyDb();
           open(options);
           break;
+        case "updaterandom":
+          tasks.add(new UpdateRandomTask(
+              currentTaskId++, randSeed_, num_, num_, writeOpt));
+          break;
+        case "mergerandom":
+          tasks.add(new MergeRandomTask(
+              currentTaskId++, randSeed_, num_, num_, writeOpt));
+          break;
         default:
           known = false;
           System.err.println("Unknown benchmark: " + benchmark);
@@ -709,9 +849,13 @@ public class DbBenchmark {
           for (Callable bgTask : bgTasks) {
             bgResults.add(bgExecutor.submit(bgTask));
           }
+          System.out.format("Starting executor at %d...\n", System.currentTimeMillis());
           start();
+          System.out.format("Finished starting executor at %d...\n", System.currentTimeMillis());
           List<Future<Stats>> results = executor.invokeAll(tasks);
+          System.out.format("Shutting down executor at %d...\n", System.currentTimeMillis());
           executor.shutdown();
+          System.out.format("Fineshed calling Shutdown executor at %d...\n", System.currentTimeMillis());
           boolean finished = executor.awaitTermination(10, TimeUnit.SECONDS);
           if (!finished) {
             System.out.format(
@@ -719,6 +863,7 @@ public class DbBenchmark {
                 benchmark);
             executor.shutdownNow();
           }
+          System.out.format("Fineshed executor at %d...\n", System.currentTimeMillis());
           setFinished(true);
           bgExecutor.shutdown();
           finished = bgExecutor.awaitTermination(10, TimeUnit.SECONDS);
@@ -728,18 +873,53 @@ public class DbBenchmark {
                 benchmark);
             bgExecutor.shutdownNow();
           }
-
+          System.out.format("Calling stop() at %d...\n", System.currentTimeMillis());
           stop(benchmark, results, currentTaskId);
         } catch (InterruptedException e) {
           System.err.println(e);
         }
       }
+      FlushOptions flushOptions = new FlushOptions();
+      flushOptions.setWaitForFlush(true);
+      db_.flush(flushOptions);
+      System.out.format("Disposing of writeOpt at %d...\n", System.currentTimeMillis());
       writeOpt.dispose();
       readOpt.dispose();
     }
     options.dispose();
+
+    long startDbClose = System.currentTimeMillis(); 
+    System.out.println("Timestamp(millis) before db.close() = " + startDbClose);
     db_.close();
+    long endDbClose = System.currentTimeMillis();
+    System.out.println("Timestamp(millis) after db.close() = " + endDbClose);
+    String dateFormatted = formatInterval(endDbClose-startDbClose);
+    System.out.format("Took %dms, or %s, to close the db.\n", (endDbClose-startDbClose), dateFormatted);
+    
+
+    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+      @Override public void run() {
+//        System.out.format("Last merge operation happend at Timestamp(millis) %d\n", LongAddMergeOpr.lastTime);
+//        System.out.println("Merge called " + LongAddMergeOpr.calledTimes.get() + " times");
+      }
+    }));
   }
+  
+  private static String formatInterval(long l) {
+    final long hr = TimeUnit.MILLISECONDS.toHours(l);
+    
+    l = l - TimeUnit.HOURS.toMillis(hr);
+    final long min = TimeUnit.MILLISECONDS.toMinutes(l);
+    
+    l = l - TimeUnit.MINUTES.toMillis(min);
+    final long sec = TimeUnit.MILLISECONDS.toSeconds(l);
+    
+    l = l - TimeUnit.SECONDS.toMillis(sec);
+    final long ms = TimeUnit.MILLISECONDS.toMillis(l);
+    
+    return String.format("%02d:%02d:%02d.%03d (hr:min:sec.ms)", hr, min, sec, ms);
+  }
+  
 
   private void printHeader(Options options) {
     int kKeySize = 16;
@@ -919,6 +1099,11 @@ public class DbBenchmark {
         "\t\treadwhilewriting -- measure the read performance of multiple readers\n" +
         "\t\t                   with a bg single writer.  The write rate of the bg\n" +
         "\t\t                   is capped by --writes_per_second.\n" +
+        "\t\tupdaterandom     -- N threads doing read-modify-write for random keys.\n" +
+        "\t\tmergerandom   -- same as updaterandom/appendrandom using merge" +
+        " operator. Must be used with merge_operator\n" +
+        "\t\treadrandommergerandom -- perform N random read-or-merge " +
+        "operations. Must be used with merge_operator\n" +
         "\tMeta Operations:\n" +
         "\t\tdelete            -- delete DB") {
       @Override public Object parseValue(String value) {
@@ -1480,8 +1665,30 @@ public class DbBenchmark {
       @Override public Object parseValue(String value) {
         return value;
       }
-    };
+    },
+    builtin_merge_operator(null, "The name of the C++ merge operator to"
+        + " use with the database. If a new merge operator is specified, be"
+        + " sure to use a fresh database.") {
+      @Override public Object parseValue(String value) {
+        return value;
+      }
+    },
+    merge_operator(null, "The full cannonical name of the merge operator to"
+        + " use with the database. If a new merge operator is specified, be"
+        + " sure to use a fresh database.") {
+      @Override public Object parseValue(String value) {
+        return value;
+      }
+    },
+    merge_operator_adaptive_mutex(false, "Use adaptive mutex, which spins in"
+        + " the user space before resorting to kernel. This could reduce"
+        + " context switch when the mutex is not heavily contended.") {
+      @Override public Object parseValue(String value) {
+        return Boolean.valueOf(value);
+      }
+    },
 
+    ;
     private Flag(Object defaultValue, String desc) {
       defaultValue_ = defaultValue;
       desc_ = desc;

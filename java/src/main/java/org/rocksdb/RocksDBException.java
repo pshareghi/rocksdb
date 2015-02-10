@@ -18,4 +18,13 @@ public class RocksDBException extends Exception {
   public RocksDBException(final String msg) {
     super(msg);
   }
+  
+  /**
+   * Used to re-throw exceptions caused by java callbacks.
+   * 
+   * @param cause the cause of this exception.
+   */
+  public RocksDBException(String msg, Throwable cause) {
+    super(msg, cause);
+  }
 }

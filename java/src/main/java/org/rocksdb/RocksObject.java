@@ -99,7 +99,7 @@ public abstract class RocksObject {
    *
    * @see #dispose()
    */
-  protected boolean isInitialized() {
+  public boolean isInitialized() {
     return (nativeHandle_ != 0);
   }
 
