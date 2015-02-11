@@ -22,6 +22,7 @@
 #include "rocksdb/slice_transform.h"
 #include "rocksdb/merge_operator.h"
 #include "utilities/merge_operators.h"
+#include "rocksjni/mergeopr_jnicallback.h"
 
 /*
  * Class:     org_rocksdb_StringAppendOperator
@@ -35,3 +36,29 @@ jlong Java_org_rocksdb_StringAppendOperator_newMergeOperatorHandleImpl
   *op = rocksdb::MergeOperators::CreateFromStringId("stringappend");
   return reinterpret_cast<jlong>(op);
 }
+
+/*
+
+ * Class:     org_rocksdb_AbstractMergeOpr
+ * Method:    disposeInternal
+ * Signature: (J)V
+
+void Java_org_rocksdb_AbstractMergeOpr_disposeInternal
+  ( JNIEnv* env, jobject jobj, jlong handle) {
+	delete reinterpret_cast<rocksdb::BaseMergeOprJniCallback*>(handle);
+}
+
+
+ * Class:     org_rocksdb_MergeOpr
+ * Method:    createNewMergeOpr0
+ * Signature: (J)V
+
+void Java_org_rocksdb_MergeOpr_createNewMergeOpr0
+  (JNIEnv* env, jobject jobj, jlong copt_handle) {
+  const rocksdb::MergeOprJniCallbackOptions* mopt =
+	reinterpret_cast<rocksdb::MergeOprJniCallbackOptions*>(mopt_handle);
+  const rocksdb::MergeOprJniCallback* m =
+	new rocksdb::MergeOprJniCallback(env, jobj, mopt);
+  rocksdb::AbstractMergeOprJni::setHandle(env, jobj, c);
+}
+*/

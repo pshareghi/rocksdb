@@ -21,6 +21,7 @@
 #include "rocksdb/utilities/backupable_db.h"
 #include "rocksdb/utilities/write_batch_with_index.h"
 #include "rocksjni/comparatorjnicallback.h"
+#include "rocksjni/mergeopr_jnicallback.h"
 #include "rocksjni/writebatchhandlerjnicallback.h"
 
 namespace rocksdb {
@@ -323,8 +324,7 @@ class ComparatorOptionsJni : public RocksDBNativeClass<
 
 // The portal class for org.rocksdb.AbstractComparator
 class AbstractComparatorJni : public RocksDBNativeClass<
-    const rocksdb::BaseComparatorJniCallback*,
-    AbstractComparatorJni> {
+    const rocksdb::BaseComparatorJniCallback*, AbstractComparatorJni> {
  public:
   static jclass getJClass(JNIEnv* env) {
     return RocksDBNativeClass::getJClass(env,
@@ -362,6 +362,61 @@ class AbstractComparatorJni : public RocksDBNativeClass<
     static jmethodID mid = env->GetMethodID(getJClass(env),
       "findShortSuccessor",
       "(Ljava/lang/String;)Ljava/lang/String;");
+    assert(mid != nullptr);
+    return mid;
+  }
+};
+
+// The portal class for org.rocksdb.MergeOprOptions
+class MergeOprOptionsJni : public RocksDBNativeClass<
+  rocksdb::MergeOprJniCallbackOptions*, MergeOprOptionsJni> {
+ public:
+  static jclass getJClass(JNIEnv* env) {
+    return RocksDBNativeClass::getJClass(env,
+        "org/rocksdb/MergeOprOptions");
+  }
+};
+
+// The portal class for org.rocksdb.AbstractMergeOpr
+class AbstractMergeOprJni : public RocksDBNativeClass<
+    const rocksdb::BaseMergeOprJniCallback*,  AbstractMergeOprJni> {
+ public:
+  static jclass getJClass(JNIEnv* env) {
+    return RocksDBNativeClass::getJClass(env,
+        "org/rocksdb/AbstractMergeOpr");
+  }
+
+  // Get the java method `name` of org.rocksdb.AbstractMergeOpr.
+  static jmethodID getNameMethodId(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(
+        getJClass(env), "name", "()Ljava/lang/String;");
+    assert(mid != nullptr);
+    return mid;
+  }
+
+  // Get the java method `fullMerge` of org.rocksdb.AbstractMergeOpr.
+  static jmethodID getFullMergeMethodId(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env),
+      "fullMerge",
+      "(Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;Ljava/util/Deque;Lorg/rocksdb/AbstractSlice;)Z");
+    assert(mid != nullptr);
+    return mid;
+  }
+
+  // Get the java method `partialMerge` of org.rocksdb.AbstractMergeOpr.
+    static jmethodID getPartialMergeMethodId(JNIEnv* env) {
+      static jmethodID mid = env->GetMethodID(getJClass(env),
+        "partialMerge",
+        "(Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;)Z");
+      assert(mid != nullptr);
+      return mid;
+  }
+
+  // Get the java method `partialMergeMulti` of org.rocksdb.AbstractMergeOpr.
+  static jmethodID getPartialMergeMultiMethodId(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env),
+	  "partialMergeMulti",
+	  "(Lorg/rocksdb/AbstractSlice;Ljava/util/Deque;Lorg/rocksdb/AbstractSlice;)Z");
     assert(mid != nullptr);
     return mid;
   }
