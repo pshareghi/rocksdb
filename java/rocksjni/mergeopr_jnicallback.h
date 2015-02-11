@@ -93,7 +93,7 @@ class MergeOprJniCallback : public BaseMergeOprJniCallback {
   ~MergeOprJniCallback();
 };
 
-class DirectMergeOprJniCallback : public BaseComparatorJniCallback {
+class DirectMergeOprJniCallback : public BaseMergeOprJniCallback {
  public:
   DirectMergeOprJniCallback(JNIEnv* env, jobject jDirectMergeOpr,
                             const MergeOprJniCallbackOptions* mopt);

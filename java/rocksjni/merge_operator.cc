@@ -59,5 +59,5 @@ void Java_org_rocksdb_MergeOpr_createNewMergeOpr0
       reinterpret_cast<rocksdb::MergeOprJniCallbackOptions*>(mopt_handle);
   const rocksdb::MergeOprJniCallback* m =
       new rocksdb::MergeOprJniCallback(env, jobj, mopt);
-  rocksdb::AbstractMergeOprJni::setHandle(env, jobj, c);
+  rocksdb::AbstractMergeOprJni::setHandle(env, jobj, m);
 }
