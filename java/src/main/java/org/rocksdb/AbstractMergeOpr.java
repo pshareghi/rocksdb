@@ -8,16 +8,17 @@ package org.rocksdb;
 import java.util.Deque;
 
 /**
- * Essentially, a MergeOperator specifies the SEMANTICS
- *  of a merge, which only client knows.
+ * Essentially, a MergeOperator specifies the SEMANTICS of a merge, which only
+ * client knows.
  *
- * This class is package private, implementers
- * should extend either of the public abstract classes:
- *   @see org.rocksdb.MergeOpr
- *   @see org.rocksdb.DirectMergeOpr
+ * This class is package private, implementers should extend either of the
+ * public abstract classes:
+ *
+ * @see org.rocksdb.MergeOpr
+ * @see org.rocksdb.DirectMergeOpr
  */
-public abstract class AbstractMergeOpr<T extends AbstractSlice>
-    extends RocksObject {
+public abstract class AbstractMergeOpr<T extends AbstractSlice> extends
+    RocksObject {
 
   /**
    * The name of the merge operator.
@@ -30,51 +31,48 @@ public abstract class AbstractMergeOpr<T extends AbstractSlice>
 
   /**
    * NOT implemented at the moment.
-   * 
-   * TODO(pshareghi): Fix type inconsistencies. In C++, opernad_list is
-   * of type string, the dequeue is a reference, and new value is a
-   *  string*. There is also a Logger* as a last parameter.
+   *
+   * TODO(pshareghi): Fix type inconsistencies. In C++, opernad_list is of type
+   * string, the dequeue is a reference, and new value is a string*. There is
+   * also a Logger* as a last parameter.
    */
-  public boolean fullMerge(T key,
-          T existing_value,
-          Deque<T> operand_list,
-          T new_value) {
-	  return false;
+  public boolean fullMerge(T key, T existing_value, Deque<T> operand_list,
+      T new_value) {
+    return false;
   }
 
   /**
    * Not implemented at the moment.
-   * 
-   * TODO(pshareghi): Fix type inconsistencies. In C++, new value is a
-   *  string*. There is also a Logger* as a last parameter.
+   *
+   * TODO(pshareghi): Fix type inconsistencies. In C++, new value is a string*.
+   * There is also a Logger* as a last parameter.
    */
-  public boolean partialMerge(T key, T left_operand,
-          T right_operand, T new_value)  {
-      return false;
+  public boolean partialMerge(T key, T left_operand, T right_operand,
+      T new_value) {
+    return false;
   }
 
   /**
    * Not implemented at the moment.
-   * 
-   * TODO(pshareghi): Fix type inconsistencies. In C++, opernad_list is
-   * of type string, the dequeue is a reference, and new value is a
-   *  string*. There is also a Logger* as a last parameter.
+   *
+   * TODO(pshareghi): Fix type inconsistencies. In C++, opernad_list is of type
+   * string, the dequeue is a reference, and new value is a string*. There is
+   * also a Logger* as a last parameter.
    */
-  public boolean partialMergeMulti(T key,
-          Deque<T> operand_list,
-          T new_value) {
-      return false;
+  public boolean partialMergeMulti(T key, Deque<T> operand_list, T new_value) {
+    return false;
   }
 
   /**
    * Deletes underlying C++ comparator pointer.
    *
-   * Note that this function should be called only after all
-   * RocksDB instances referencing the merge operator are closed.
-   * Otherwise an undefined behavior will occur.
+   * Note that this function should be called only after all RocksDB instances
+   * referencing the merge operator are closed. Otherwise an undefined behavior
+   * will occur.
    */
-  @Override protected void disposeInternal() {
-    assert(isInitialized());
+  @Override
+  protected void disposeInternal() {
+    assert (isInitialized());
     disposeInternal(nativeHandle_);
   }
 

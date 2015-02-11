@@ -6,13 +6,11 @@
 package org.rocksdb;
 
 /**
- * Base class for merge operators which will receive
- * ByteBuffer based access via org.rocksdb.DirectSlice
- * in their merge method implementation.
+ * Base class for merge operators which will receive ByteBuffer based access via
+ * org.rocksdb.DirectSlice in their merge method implementation.
  *
- * ByteBuffer based slices perform better when large keys
- * are involved. When using smaller keys consider
- * using @see org.rocksdb.MergeOp
+ * ByteBuffer based slices perform better when large keys are involved. When
+ * using smaller keys consider using @see org.rocksdb.MergeOp
  */
 public abstract class DirectMergeOpr extends AbstractMergeOpr<DirectSlice> {
   public DirectMergeOpr(final MergeOprOptions mopt) {

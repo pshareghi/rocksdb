@@ -4,16 +4,20 @@
 // of patent rights can be found in the PATENTS file in the same directory.
 //
 // This file implements the callback "bridges" between Java and C++ for
-// rocksdb::AssociativeMergeOperator and rocksdb::DirectAssociativeMergeOperator.
+// rocksdb::AssociativeMergeOperator and
+// rocksdb::DirectAssociativeMergeOperator.
 
 #ifndef JAVA_ROCKSJNI_ASSOCIATIVE_MERGEOPR_JNICALLBACK_H_
 #define JAVA_ROCKSJNI_ASSOCIATIVE_MERGEOPR_JNICALLBACK_H_
 
 #include <jni.h>
+
+#include <deque>
 #include <string>
+
+#include "port/port.h"
 #include "rocksdb/merge_operator.h"
 #include "rocksdb/slice.h"
-#include "port/port.h"
 
 namespace rocksdb {
 
@@ -25,7 +29,8 @@ struct AssociativeMergeOprJniCallbackOptions {
   // Default: false
   bool use_adaptive_mutex;
 
-  AssociativeMergeOprJniCallbackOptions() : use_adaptive_mutex(false) {
+  AssociativeMergeOprJniCallbackOptions() :
+      use_adaptive_mutex(false) {
   }
 };
 
@@ -47,66 +52,58 @@ struct AssociativeMergeOprJniCallbackOptions {
  */
 class BaseAssociativeMergeOprJniCallback : public MergeOperator {
  public:
-	BaseAssociativeMergeOprJniCallback(
+  BaseAssociativeMergeOprJniCallback(
       JNIEnv* env, jobject jAssociativeMergeOpr,
       const AssociativeMergeOprJniCallbackOptions* mopt);
-    virtual ~BaseAssociativeMergeOprJniCallback();
-    virtual const char* Name() const;
-    virtual bool Merge(const Slice& key,
-                         const Slice* existing_value,
-                         const Slice& value,
-                         std::string* new_value,
-                         Logger* logger) const = 0;
+  virtual ~BaseAssociativeMergeOprJniCallback();
+  virtual const char* Name() const;
+  virtual bool Merge(const Slice& key, const Slice* existing_value,
+                     const Slice& value, std::string* new_value,
+                     Logger* logger) const = 0;
 
-
-     private:
-      // Default implementations of the MergeOperator functions
-      virtual bool FullMerge(const Slice& key,
-                             const Slice* existing_value,
-                             const std::deque<std::string>& operand_list,
-                             std::string* new_value,
-                             Logger* logger) const override;
-
-      virtual bool PartialMerge(const Slice& key,
-                                const Slice& left_operand,
-                                const Slice& right_operand,
-                                std::string* new_value,
-                                Logger* logger) const override;
  private:
-    // used for synchronization in FullMerge method
-    port::Mutex* mtx_fullMerge;
-    // used for synchronization in PartialMerge method
-    port::Mutex* mtx_partialMerge;
-    // used for synchronization in PartialMergeMulti method
-    port::Mutex* mtx_partialMergeMulti;
+  // Default implementations of the MergeOperator functions
+  virtual bool FullMerge(const Slice& key, const Slice* existing_value,
+                         const std::deque<std::string>& operand_list,
+                         std::string* new_value, Logger* logger) const override;
 
-    JavaVM* m_jvm;
-    jobject m_jMergeOpr;
-    std::string m_name;
-    jmethodID m_jFullMergeMethodId;
-    jmethodID m_jPartialMergeMethodId;
-    jmethodID m_jPartialMergeMultiMethodId;
+  virtual bool PartialMerge(const Slice& key, const Slice& left_operand,
+                            const Slice& right_operand, std::string* new_value,
+                            Logger* logger) const override;
+
+ private:
+  // used for synchronization in FullMerge method
+  port::Mutex* mtx_fullMerge;
+  // used for synchronization in PartialMerge method
+  port::Mutex* mtx_partialMerge;
+  // used for synchronization in PartialMergeMulti method
+  port::Mutex* mtx_partialMergeMulti;
+
+  JavaVM* m_jvm;
+  jobject m_jMergeOpr;
+  std::string m_name;
+  jmethodID m_jFullMergeMethodId;
+  jmethodID m_jPartialMergeMethodId;
+  jmethodID m_jPartialMergeMultiMethodId;
 
  protected:
-    JNIEnv* getJniEnv() const;
-    jobject m_jSliceA;
-    jobject m_jSliceB;
+  JNIEnv* getJniEnv() const;
+  jobject m_jSliceA;
+  jobject m_jSliceB;
 };
 
 class MergeOprJniCallback : public BaseMergeOprJniCallback {
  public:
-	MergeOprJniCallback(
-        JNIEnv* env, jobject jMergeOpr,
-        const MergeOprJniCallbackOptions* mopt);
-      ~MergeOprJniCallback();
+  MergeOprJniCallback(JNIEnv* env, jobject jMergeOpr,
+                      const MergeOprJniCallbackOptions* mopt);
+  ~MergeOprJniCallback();
 };
 
 class DirectMergeOprJniCallback : public BaseComparatorJniCallback {
  public:
-	DirectMergeOprJniCallback(
-        JNIEnv* env, jobject jDirectMergeOpr,
-        const MergeOprJniCallbackOptions* mopt);
-      ~DirectMergeOprJniCallback();
+  DirectMergeOprJniCallback(JNIEnv* env, jobject jDirectMergeOpr,
+                            const MergeOprJniCallbackOptions* mopt);
+  ~DirectMergeOprJniCallback();
 };
 }  // namespace rocksdb
 

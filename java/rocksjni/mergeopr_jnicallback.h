@@ -10,10 +10,13 @@
 #define JAVA_ROCKSJNI_MERGEOPR_JNICALLBACK_H_
 
 #include <jni.h>
+
+#include <deque>
 #include <string>
+
+#include "port/port.h"
 #include "rocksdb/merge_operator.h"
 #include "rocksdb/slice.h"
-#include "port/port.h"
 
 namespace rocksdb {
 
@@ -25,7 +28,8 @@ struct MergeOprJniCallbackOptions {
   // Default: false
   bool use_adaptive_mutex;
 
-  MergeOprJniCallbackOptions() : use_adaptive_mutex(false) {
+  MergeOprJniCallbackOptions() :
+      use_adaptive_mutex(false) {
   }
 };
 
@@ -47,58 +51,53 @@ struct MergeOprJniCallbackOptions {
  */
 class BaseMergeOprJniCallback : public MergeOperator {
  public:
-	BaseMergeOprJniCallback(
-      JNIEnv* env, jobject jMergeOpr,
-      const MergeOprJniCallbackOptions* mopt);
-    virtual ~BaseMergeOprJniCallback();
-    virtual const char* Name() const;
-    virtual bool FullMerge(const Slice& key,
-                             const Slice* existing_value,
-                             const std::deque<std::string>& operand_list,
-                             std::string* new_value,
-                             Logger* logger) const;
-    virtual bool PartialMerge(const Slice& key, const Slice& left_operand,
-                              const Slice& right_operand, std::string* new_value,
-                              Logger* logger) const;
-    virtual bool PartialMergeMulti(const Slice& key,
-                                   const std::deque<Slice>& operand_list,
-                                   std::string* new_value, Logger* logger) const;
+  BaseMergeOprJniCallback(JNIEnv* env, jobject jMergeOpr,
+                          const MergeOprJniCallbackOptions* mopt);
+  virtual ~BaseMergeOprJniCallback();
+  virtual const char* Name() const;
+  virtual bool FullMerge(const Slice& key, const Slice* existing_value,
+                         const std::deque<std::string>& operand_list,
+                         std::string* new_value, Logger* logger) const;
+  virtual bool PartialMerge(const Slice& key, const Slice& left_operand,
+                            const Slice& right_operand, std::string* new_value,
+                            Logger* logger) const;
+  virtual bool PartialMergeMulti(const Slice& key,
+                                 const std::deque<Slice>& operand_list,
+                                 std::string* new_value, Logger* logger) const;
 
  private:
-    // used for synchronization in FullMerge method
-    port::Mutex* mtx_fullMerge;
-    // used for synchronization in PartialMerge method
-    port::Mutex* mtx_partialMerge;
-    // used for synchronization in PartialMergeMulti method
-    port::Mutex* mtx_partialMergeMulti;
+  // used for synchronization in FullMerge method
+  port::Mutex* mtx_fullMerge;
+  // used for synchronization in PartialMerge method
+  port::Mutex* mtx_partialMerge;
+  // used for synchronization in PartialMergeMulti method
+  port::Mutex* mtx_partialMergeMulti;
 
-    JavaVM* m_jvm;
-    jobject m_jMergeOpr;
-    std::string m_name;
-    jmethodID m_jFullMergeMethodId;
-    jmethodID m_jPartialMergeMethodId;
-    jmethodID m_jPartialMergeMultiMethodId;
+  JavaVM* m_jvm;
+  jobject m_jMergeOpr;
+  std::string m_name;
+  jmethodID m_jFullMergeMethodId;
+  jmethodID m_jPartialMergeMethodId;
+  jmethodID m_jPartialMergeMultiMethodId;
 
  protected:
-    JNIEnv* getJniEnv() const;
-    jobject m_jSliceA;
-    jobject m_jSliceB;
+  JNIEnv* getJniEnv() const;
+  jobject m_jSliceA;
+  jobject m_jSliceB;
 };
 
 class MergeOprJniCallback : public BaseMergeOprJniCallback {
  public:
-	MergeOprJniCallback(
-        JNIEnv* env, jobject jMergeOpr,
-        const MergeOprJniCallbackOptions* mopt);
-      ~MergeOprJniCallback();
+  MergeOprJniCallback(JNIEnv* env, jobject jMergeOpr,
+                      const MergeOprJniCallbackOptions* mopt);
+  ~MergeOprJniCallback();
 };
 
 class DirectMergeOprJniCallback : public BaseComparatorJniCallback {
  public:
-	DirectMergeOprJniCallback(
-        JNIEnv* env, jobject jDirectMergeOpr,
-        const MergeOprJniCallbackOptions* mopt);
-      ~DirectMergeOprJniCallback();
+  DirectMergeOprJniCallback(JNIEnv* env, jobject jDirectMergeOpr,
+                            const MergeOprJniCallbackOptions* mopt);
+  ~DirectMergeOprJniCallback();
 };
 }  // namespace rocksdb
 
