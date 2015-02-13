@@ -36,7 +36,7 @@ public abstract class AbstractMergeOpr<T extends AbstractSlice> extends
    * string, the dequeue is a reference, and new value is a string*. There is
    * also a Logger* as a last parameter.
    */
-  public boolean fullMerge(T key, T existing_value, Deque<T> operand_list,
+  public boolean fullMerge(T key, T existingValue, Deque<T> operandList,
       T new_value) {
     return false;
   }
@@ -47,8 +47,8 @@ public abstract class AbstractMergeOpr<T extends AbstractSlice> extends
    * TODO(pshareghi): Fix type inconsistencies. In C++, new value is a string*.
    * There is also a Logger* as a last parameter.
    */
-  public boolean partialMerge(T key, T left_operand, T right_operand,
-      T new_value) {
+  public boolean partialMerge(T key, T leftOperand, T rightOperand,
+      T newValue) {
     return false;
   }
 
@@ -59,7 +59,7 @@ public abstract class AbstractMergeOpr<T extends AbstractSlice> extends
    * string, the dequeue is a reference, and new value is a string*. There is
    * also a Logger* as a last parameter.
    */
-  public boolean partialMergeMulti(T key, Deque<T> operand_list, T new_value) {
+  public boolean partialMergeMulti(T key, Deque<T> operandList, T newValue) {
     return false;
   }
 

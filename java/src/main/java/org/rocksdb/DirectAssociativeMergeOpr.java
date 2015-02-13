@@ -30,8 +30,8 @@ public abstract class DirectAssociativeMergeOpr extends DirectMergeOpr {
    * string, the dequeue is a reference, and new value is a string*. There is
    * also a Logger* as a last parameter.
    */
-  public final boolean fullMerge(DirectSlice key, DirectSlice existing_value,
-      Deque<DirectSlice> operand_list, DirectSlice new_value) {
+  public final boolean fullMerge(DirectSlice key, DirectSlice existingValue,
+      Deque<DirectSlice> operandList, DirectSlice newValue) {
     return true;
   }
 
@@ -43,8 +43,8 @@ public abstract class DirectAssociativeMergeOpr extends DirectMergeOpr {
    * TODO(pshareghi): Fix type inconsistencies. In C++, new value is a string*.
    * There is also a Logger* as a last parameter.
    */
-  public final boolean partialMerge(DirectSlice key, DirectSlice left_operand,
-      DirectSlice right_operand, DirectSlice new_value) {
+  public final boolean partialMerge(DirectSlice key, DirectSlice leftOperand,
+      DirectSlice rightOperand, DirectSlice newValue) {
     return true;
   }
 
@@ -58,10 +58,30 @@ public abstract class DirectAssociativeMergeOpr extends DirectMergeOpr {
    * also a Logger* as a last parameter.
    */
   public final boolean partialMergeMulti(DirectSlice key,
-      Deque<DirectSlice> operand_list, DirectSlice new_value) {
+      Deque<DirectSlice> operandList, DirectSlice newValue) {
     return true;
   }
 
+  public abstract boolean Merge(Slice key,
+      Slice existingValue,
+      Slice value,
+      Slice newValue);
+  
+  /**
+   * Deletes underlying C++ comparator pointer.
+   *
+   * Note that this function should be called only after all RocksDB instances
+   * referencing the merge operator are closed. Otherwise an undefined behavior
+   * will occur.
+   */
+  @Override
+  protected void disposeInternal() {
+    assert (isInitialized());
+    disposeInternal(nativeHandle_);
+  }
+
+  private native void disposeInternal(long handle);
+  
   private native void createNewDirectAssociativeMergeOpr0(
       final long mergeOprOptionsHandle);
 }

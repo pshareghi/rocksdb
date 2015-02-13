@@ -40,17 +40,16 @@ struct AssociativeMergeOprJniCallbackOptions {
  * called back from the RocksDB storage engine (C++)
  * we then callback to the appropriate Java method
  * this enables AssociativeMerge Operators to be
- *  implemented in Java.
+ * implemented in Java.
  *
  * The design of this Associative MergeOperator caches the Java Slice
- * objects that are used in the merge methods. Instead of
- * creating new objects for each callback  of those
- * functions, by reuse via setHandle we are a lot
- * faster; Unfortunately this means that we have to
- * introduce independent locking in regions of each of those methods
- * via the mutexs mtx_compare and mtx_findShortestSeparator respectively
+ * objects that are used in the merge method. Instead of
+ * creating new objects for each callback merge, by reuse via
+ * setHandle we are a lot faster; Unfortunately this means that we
+ * have to introduce independent locking in this method via the mutex
+ * mtx_merge.
  */
-class BaseAssociativeMergeOprJniCallback : public MergeOperator {
+class BaseAssociativeMergeOprJniCallback : public AssociativeMergeOperator {
  public:
   BaseAssociativeMergeOprJniCallback(
       JNIEnv* env, jobject jAssociativeMergeOpr,
@@ -59,51 +58,38 @@ class BaseAssociativeMergeOprJniCallback : public MergeOperator {
   virtual const char* Name() const;
   virtual bool Merge(const Slice& key, const Slice* existing_value,
                      const Slice& value, std::string* new_value,
-                     Logger* logger) const = 0;
+                     Logger* logger) const;
 
  private:
-  // Default implementations of the MergeOperator functions
-  virtual bool FullMerge(const Slice& key, const Slice* existing_value,
-                         const std::deque<std::string>& operand_list,
-                         std::string* new_value, Logger* logger) const override;
-
-  virtual bool PartialMerge(const Slice& key, const Slice& left_operand,
-                            const Slice& right_operand, std::string* new_value,
-                            Logger* logger) const override;
-
- private:
-  // used for synchronization in FullMerge method
-  port::Mutex* mtx_fullMerge;
-  // used for synchronization in PartialMerge method
-  port::Mutex* mtx_partialMerge;
-  // used for synchronization in PartialMergeMulti method
-  port::Mutex* mtx_partialMergeMulti;
+  // used for synchronization in Merge method
+  port::Mutex* mtx_merge;
 
   JavaVM* m_jvm;
-  jobject m_jMergeOpr;
+  jobject m_jAssociativeMergeOpr;
   std::string m_name;
-  jmethodID m_jFullMergeMethodId;
-  jmethodID m_jPartialMergeMethodId;
-  jmethodID m_jPartialMergeMultiMethodId;
+  jmethodID m_jMergeMethodId;
 
  protected:
   JNIEnv* getJniEnv() const;
-  jobject m_jSliceA;
-  jobject m_jSliceB;
+  jobject m_jKeySlice;
+  jobject m_jExistingValueSlice;
+  jobject m_jValueSlice;
+  jobject m_jNewValueStringBuilder;
 };
 
-class MergeOprJniCallback : public BaseMergeOprJniCallback {
+class AssoicativeMergeOprJniCallback : public BaseAssociativeMergeOprJniCallback {
  public:
-  MergeOprJniCallback(JNIEnv* env, jobject jMergeOpr,
-                      const MergeOprJniCallbackOptions* mopt);
-  ~MergeOprJniCallback();
+  AssoicativeMergeOprJniCallback(JNIEnv* env, jobject jMergeOpr,
+                                 const MergeOprJniCallbackOptions* mopt);
+  ~AssoicativeMergeOprJniCallback();
 };
 
-class DirectMergeOprJniCallback : public BaseComparatorJniCallback {
+class DirectAssociativeMergeOprJniCallback : public BaseAssociativeMergeOprJniCallback {
  public:
-  DirectMergeOprJniCallback(JNIEnv* env, jobject jDirectMergeOpr,
-                            const MergeOprJniCallbackOptions* mopt);
-  ~DirectMergeOprJniCallback();
+  DirectAssociativeMergeOprJniCallback(
+      JNIEnv* env, jobject jDirectAssociativeMergeOpr,
+      const AssociativeMergeOprJniCallbackOptions* mopt);
+  ~DirectAssociativeMergeOprJniCallback();
 };
 }  // namespace rocksdb
 

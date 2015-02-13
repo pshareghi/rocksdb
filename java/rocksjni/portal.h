@@ -376,7 +376,7 @@ class MergeOprOptionsJni : public RocksDBNativeClass<
   }
 };
 
-// The portal class for org.rocksdb.AbstractMergeOpr
+// The portal class for org.rocksdb.AbstractMergeOpr and its subclasses
 class AbstractMergeOprJni : public RocksDBNativeClass<
     const rocksdb::BaseMergeOprJniCallback*, AbstractMergeOprJni> {
  public:
@@ -421,6 +421,16 @@ class AbstractMergeOprJni : public RocksDBNativeClass<
     assert(mid != nullptr);
     return mid;
   }
+
+  // Get the java method `merge` of org.rocksdb.AssociativeMergeOpr or DirectAssociativeMergeOpr.
+    static jmethodID getMergeMethodId(JNIEnv* env) {
+      static jmethodID mid = env->GetMethodID(
+          getJClass(env), "merge",
+          "(Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;"
+          "Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;)Z");
+      assert(mid != nullptr);
+      return mid;
+    }
 };
 
 // The portal class for org.rocksdb.AbstractSlice
@@ -463,6 +473,24 @@ class DirectSliceJni {
     assert(mid != nullptr);
     return env->NewObject(getJClass(env), mid);
   }
+};
+
+class StringBuilderJni {
+ public:
+  // Get the java class id of java.util.StringBuilder.
+  static jclass getJClass(JNIEnv* env) {
+    jclass jclazz = env->FindClass("java/util/StringBuilder");
+    assert(jclazz != nullptr);
+    return jclazz;
+  }
+
+  static jobject construct0(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env), "<init>", "()V");
+    assert(mid != nullptr);
+    return env->NewObject(getJClass(env), mid);
+  }
+
+
 };
 
 class ListJni {

@@ -29,8 +29,8 @@ public abstract class AssociativeMergeOpr extends MergeOpr {
    * string, the dequeue is a reference, and new value is a string*. There is
    * also a Logger* as a last parameter.
    */
-  public final boolean fullMerge(Slice key, Slice existing_value,
-      Deque<Slice> operand_list, Slice new_value) {
+  public final boolean fullMerge(Slice key, Slice existingValue,
+      Deque<Slice> operandList, Slice newValue) {
     return true;
   }
 
@@ -42,8 +42,8 @@ public abstract class AssociativeMergeOpr extends MergeOpr {
    * TODO(pshareghi): Fix type inconsistencies. In C++, new value is a string*.
    * There is also a Logger* as a last parameter.
    */
-  public final boolean partialMerge(Slice key, Slice left_operand,
-      Slice right_operand, Slice new_value) {
+  public final boolean partialMerge(Slice key, Slice leftOperand,
+      Slice rightOperand, Slice newValue) {
     return true;
   }
 
@@ -56,10 +56,30 @@ public abstract class AssociativeMergeOpr extends MergeOpr {
    * string, the dequeue is a reference, and new value is a string*. There is
    * also a Logger* as a last parameter.
    */
-  public final boolean partialMergeMulti(Slice key, Deque<Slice> operand_list,
-      Slice new_value) {
+  public final boolean partialMergeMulti(Slice key, Deque<Slice> operandList,
+      Slice newValue) {
     return true;
   }
+  
+  public abstract boolean Merge(Slice key,
+      Slice existingValue,
+      Slice value,
+      Slice newValue);
+  
+  /**
+   * Deletes underlying C++ comparator pointer.
+   *
+   * Note that this function should be called only after all RocksDB instances
+   * referencing the merge operator are closed. Otherwise an undefined behavior
+   * will occur.
+   */
+  @Override
+  protected void disposeInternal() {
+    assert (isInitialized());
+    disposeInternal(nativeHandle_);
+  }
+
+  private native void disposeInternal(long handle);
 
   private native void createNewAssociativeMergeOpr0(
       final long mergeOprOptionsHandle);
