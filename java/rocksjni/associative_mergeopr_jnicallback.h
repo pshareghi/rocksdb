@@ -74,13 +74,12 @@ class BaseAssociativeMergeOprJniCallback : public AssociativeMergeOperator {
   jobject m_jKeySlice;
   jobject m_jExistingValueSlice;
   jobject m_jValueSlice;
-  jobject m_jNewValueStringBuilder;
 };
 
 class AssoicativeMergeOprJniCallback : public BaseAssociativeMergeOprJniCallback {
  public:
   AssoicativeMergeOprJniCallback(JNIEnv* env, jobject jMergeOpr,
-                                 const MergeOprJniCallbackOptions* mopt);
+                                 const AssociativeMergeOprJniCallbackOptions* mopt);
   ~AssoicativeMergeOprJniCallback();
 };
 

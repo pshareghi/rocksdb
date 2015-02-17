@@ -32,35 +32,39 @@ public abstract class AbstractMergeOpr<T extends AbstractSlice> extends
   /**
    * NOT implemented at the moment.
    *
+   * Instead of a boolean the new value is returned, null indicates false.
+   *
    * TODO(pshareghi): Fix type inconsistencies. In C++, opernad_list is of type
    * string, the dequeue is a reference, and new value is a string*. There is
    * also a Logger* as a last parameter.
    */
-  public boolean fullMerge(T key, T existingValue, Deque<T> operandList,
-      T new_value) {
-    return false;
+  public byte[] fullMerge(T key, T existingValue, Deque<T> operandList) {
+    return null;
   }
 
   /**
    * Not implemented at the moment.
+   * 
+   * Instead of a boolean the new value is returned, null indicates false.
    *
    * TODO(pshareghi): Fix type inconsistencies. In C++, new value is a string*.
    * There is also a Logger* as a last parameter.
    */
-  public boolean partialMerge(T key, T leftOperand, T rightOperand,
-      T newValue) {
-    return false;
+  public byte[] partialMerge(T key, T leftOperand, T rightOperand) {
+    return null;
   }
 
   /**
    * Not implemented at the moment.
    *
+   * Instead of a boolean the new value is returned, null indicates false.
+   *
    * TODO(pshareghi): Fix type inconsistencies. In C++, opernad_list is of type
    * string, the dequeue is a reference, and new value is a string*. There is
    * also a Logger* as a last parameter.
    */
-  public boolean partialMergeMulti(T key, Deque<T> operandList, T newValue) {
-    return false;
+  public byte[] partialMergeMulti(T key, Deque<T> operandList) {
+    return null;
   }
 
   /**

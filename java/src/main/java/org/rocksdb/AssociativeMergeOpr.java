@@ -24,27 +24,31 @@ public abstract class AssociativeMergeOpr extends MergeOpr {
    * The native handler does not do a JNI callback for this method It directly
    * calls the C++ AssociativeMerge implementation. The method is made final so
    * that no subclass can implement it differently.
+   * 
+   * Instead of a boolean the new value is returned, null indicates false.
    *
    * TODO(pshareghi): Fix type inconsistencies. In C++, opernad_list is of type
    * string, the dequeue is a reference, and new value is a string*. There is
    * also a Logger* as a last parameter.
    */
-  public final boolean fullMerge(Slice key, Slice existingValue,
-      Deque<Slice> operandList, Slice newValue) {
-    return true;
+  public final byte[] fullMerge(Slice key, Slice existingValue,
+      Deque<Slice> operandList) {
+    return null;
   }
 
   /**
    * The native handler does not do a JNI callback for this method It directly
    * calls the C++ AssociativeMerge implementation. The method is made final so
    * that no subclass can implement it differently.
+   *
+   * Instead of a boolean the new value is returned, null indicates false.
    *
    * TODO(pshareghi): Fix type inconsistencies. In C++, new value is a string*.
    * There is also a Logger* as a last parameter.
    */
-  public final boolean partialMerge(Slice key, Slice leftOperand,
-      Slice rightOperand, Slice newValue) {
-    return true;
+  public final byte[] partialMerge(Slice key, Slice leftOperand,
+      Slice rightOperand) {
+    return null;
   }
 
   /**
@@ -52,19 +56,19 @@ public abstract class AssociativeMergeOpr extends MergeOpr {
    * calls the C++ AssociativeMerge implementation. The method is made final so
    * that no subclass can implement it differently.
    *
+   * Instead of a boolean the new value is returned, null indicates false.
+   *
    * TODO(pshareghi): Fix type inconsistencies. In C++, opernad_list is of type
    * string, the dequeue is a reference, and new value is a string*. There is
    * also a Logger* as a last parameter.
    */
-  public final boolean partialMergeMulti(Slice key, Deque<Slice> operandList,
-      Slice newValue) {
-    return true;
+  public final byte[] partialMergeMulti(Slice key, Deque<Slice> operandList) {
+    return null;
   }
   
-  public abstract boolean Merge(Slice key,
+  public abstract byte[] Merge(Slice key,
       Slice existingValue,
-      Slice value,
-      Slice newValue);
+      Slice value);
   
   /**
    * Deletes underlying C++ comparator pointer.

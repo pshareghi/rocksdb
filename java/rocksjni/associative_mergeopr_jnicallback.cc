@@ -61,16 +61,28 @@ bool BaseAssociativeMergeOprJniCallback::Merge(const Slice& key, const Slice* ex
   AbstractSliceJni::setHandle(m_env, m_jKeySlice, &key);
   AbstractSliceJni::setHandle(m_env, m_jExistingValueSlice, existing_value);
   AbstractSliceJni::setHandle(m_env, m_jValueSlice, &value);
-  Slice new_value_slice(new_value);
-  jboolean result =
+  
+  jbyteArray jNewValue =
     m_env->CallBooleanMethod(m_jAssociativeMergeOpr, m_jMergeMethodId, m_jKeySlice,
-      m_jExistingValueSlice, m_jValueSlice );
+      m_jExistingValueSlice, m_jValueSlice);
+
+  // A non-null jNewValue indictaes success
+  bool resultFlag;
+  
+  if (jNewValue != NULL) {
+    int len = env->GetArrayLength(jNewValue);
+    char* cppNewValue = new char[len];
+	env->GetByteArrayRegion(jNewValue, 0, len, cppNewValue);
+	new_value->assign(cppNewValue);
+	delete cppNewValue;
+  } else {
+	new_value->clear();   
+  }
 
   mtx_merge->Unlock();
-
   m_jvm->DetachCurrentThread();
 
-  return result;
+  return resultFlag;
 }
 
 BaseAssociativeMergeOprJniCallback::~BaseAssociativeMergeOprJniCallback() {
@@ -83,6 +95,8 @@ BaseAssociativeMergeOprJniCallback::~BaseAssociativeMergeOprJniCallback() {
   // has an attached thread, getJniEnv above is just a no-op Attach to get
   // the env jvm->DetachCurrentThread();
 }
+
+AssoicativeMergeOprJniCallback::AssoicativeMergeOprJniCallback
 
 ComparatorJniCallback::ComparatorJniCallback(
     JNIEnv* env, jobject jComparator,

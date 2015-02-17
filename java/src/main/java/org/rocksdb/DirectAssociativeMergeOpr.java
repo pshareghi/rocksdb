@@ -26,26 +26,30 @@ public abstract class DirectAssociativeMergeOpr extends DirectMergeOpr {
    * calls the C++ AssociativeMerge implementation. The method is made final so
    * that no subclass can implement it differently.
    *
+   * Instead of a boolean the new value is returned, null indicates false.
+   *
    * TODO(pshareghi): Fix type inconsistencies. In C++, opernad_list is of type
    * string, the dequeue is a reference, and new value is a string*. There is
    * also a Logger* as a last parameter.
    */
-  public final boolean fullMerge(DirectSlice key, DirectSlice existingValue,
-      Deque<DirectSlice> operandList, DirectSlice newValue) {
-    return true;
+  public final byte[] fullMerge(DirectSlice key, DirectSlice existingValue,
+      Deque<DirectSlice> operandList) {
+    return null;
   }
 
   /**
    * The native handler does not do a JNI callback for this method It directly
    * calls the C++ AssociativeMerge implementation. The method is made final so
    * that no subclass can implement it differently.
+   *
+   * Instead of a boolean the new value is returned, null indicates false.
    *
    * TODO(pshareghi): Fix type inconsistencies. In C++, new value is a string*.
    * There is also a Logger* as a last parameter.
    */
-  public final boolean partialMerge(DirectSlice key, DirectSlice leftOperand,
-      DirectSlice rightOperand, DirectSlice newValue) {
-    return true;
+  public final byte[] partialMerge(DirectSlice key, DirectSlice leftOperand,
+      DirectSlice rightOperand) {
+    return null;
   }
 
   /**
@@ -53,19 +57,20 @@ public abstract class DirectAssociativeMergeOpr extends DirectMergeOpr {
    * calls the C++ AssociativeMerge implementation. The method is made final so
    * that no subclass can implement it differently.
    *
+   * Instead of a boolean the new value is returned, null indicates false.
+   *
    * TODO(pshareghi): Fix type inconsistencies. In C++, opernad_list is of type
    * string, the dequeue is a reference, and new value is a string*. There is
    * also a Logger* as a last parameter.
    */
-  public final boolean partialMergeMulti(DirectSlice key,
-      Deque<DirectSlice> operandList, DirectSlice newValue) {
-    return true;
+  public final byte[] partialMergeMulti(DirectSlice key,
+      Deque<DirectSlice> operandList) {
+    return null;
   }
 
-  public abstract boolean Merge(Slice key,
+  public abstract byte[] Merge(Slice key,
       Slice existingValue,
-      Slice value,
-      Slice newValue);
+      Slice value);
   
   /**
    * Deletes underlying C++ comparator pointer.
