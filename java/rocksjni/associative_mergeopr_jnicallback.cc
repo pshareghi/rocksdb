@@ -23,8 +23,8 @@ BaseAssociativeMergeOprJniCallback::BaseAssociativeMergeOprJniCallback(
   // across multiple method calls, so we create a global ref
   m_jAssociativeMergeOpr = env->NewGlobalRef(jAssociativeMergeOpr);
 
-  // Note: The name of an AssociativeMergeOpr will not change during it's lifetime,
-  // so we cache it in a global var
+  // Note: The name of an AssociativeMergeOpr will not change during it's
+  // lifetime, so we cache it in a global var
   jmethodID jNameMethodId = AbstractMergeOprJni::getNameMethodId(env);
   jstring jsName = (jstring) env->CallObjectMethod(m_jAssociativeMergeOpr,
                                                    jNameMethodId);
@@ -77,7 +77,8 @@ bool BaseAssociativeMergeOprJniCallback::Merge(const Slice& key,
     if (jNewValue != NULL) {
       int len = m_env->GetArrayLength(jNewValue);
       char* cppNewValue = new char[len];
-      m_env->GetByteArrayRegion(jNewValue, 0, len, (jbyte*) cppNewValue);
+      m_env->GetByteArrayRegion(jNewValue, 0, len,
+          reinterpret_cast<jbyte*>(cppNewValue));
       new_value->assign(cppNewValue);
       delete cppNewValue;
       success = true;
