@@ -12,8 +12,8 @@
 namespace rocksdb {
 BaseAssociativeMergeOprJniCallback::BaseAssociativeMergeOprJniCallback(
     JNIEnv* env, jobject jAssociativeMergeOpr,
-          const AssociativeMergeOprJniCallbackOptions* mopt)
-    : mtx_merge(new port::Mutex(mopt->use_adaptive_mutex)) {
+    const AssociativeMergeOprJniCallbackOptions* mopt) :
+    mtx_merge(new port::Mutex(mopt->use_adaptive_mutex)) {
   // Note: merge method may be accessed by multiple threads,
   // so we ref the jvm not the env
   const jint rs = env->GetJavaVM(&m_jvm);
@@ -26,7 +26,8 @@ BaseAssociativeMergeOprJniCallback::BaseAssociativeMergeOprJniCallback(
   // Note: The name of an AssociativeMergeOpr will not change during it's lifetime,
   // so we cache it in a global var
   jmethodID jNameMethodId = AbstractMergeOprJni::getNameMethodId(env);
-  jstring jsName = (jstring)env->CallObjectMethod(m_jAssociativeMergeOpr, jNameMethodId);
+  jstring jsName = (jstring) env->CallObjectMethod(m_jAssociativeMergeOpr,
+                                                   jNameMethodId);
   m_name = JniUtil::copyString(env, jsName);  // also releases jsName
 
   m_jMergeMethodId = AbstractMergeOprJni::getMergeMethodId(env);
@@ -115,37 +116,35 @@ BaseAssociativeMergeOprJniCallback::~BaseAssociativeMergeOprJniCallback() {
   // the env jvm->DetachCurrentThread();
 }
 
-// AssoicativeMergeOprJniCallback::AssoicativeMergeOprJniCallback
-
-/*ComparatorJniCallback::ComparatorJniCallback(
-    JNIEnv* env, jobject jComparator,
-    const ComparatorJniCallbackOptions* copt) :
-    BaseComparatorJniCallback(env, jComparator, copt) {
-  m_jSliceA = env->NewGlobalRef(SliceJni::construct0(env));
-  m_jSliceB = env->NewGlobalRef(SliceJni::construct0(env));
-  m_jSliceLimit = env->NewGlobalRef(SliceJni::construct0(env));
+AssoicativeMergeOprJniCallback::AssoicativeMergeOprJniCallback(
+    JNIEnv* env, jobject jAssociativeMergeOpr,
+    const AssociativeMergeOprJniCallbackOptions* mopt) :
+    BaseAssociativeMergeOprJniCallback(env, jAssociativeMergeOpr, mopt) {
+  m_jKeySlice = env->NewGlobalRef(SliceJni::construct0(env));
+  m_jExistingValueSlice = env->NewGlobalRef(SliceJni::construct0(env));
+  m_jValueSlice = env->NewGlobalRef(SliceJni::construct0(env));
 }
 
-ComparatorJniCallback::~ComparatorJniCallback() {
+AssoicativeMergeOprJniCallback::~AssoicativeMergeOprJniCallback() {
   JNIEnv* m_env = getJniEnv();
-  m_env->DeleteGlobalRef(m_jSliceA);
-  m_env->DeleteGlobalRef(m_jSliceB);
-  m_env->DeleteGlobalRef(m_jSliceLimit);
+  m_env->DeleteGlobalRef(m_jKeySlice);
+  m_env->DeleteGlobalRef(m_jExistingValueSlice);
+  m_env->DeleteGlobalRef(m_jValueSlice);
 }
 
-DirectComparatorJniCallback::DirectComparatorJniCallback(
-    JNIEnv* env, jobject jComparator,
-    const ComparatorJniCallbackOptions* copt) :
-    BaseComparatorJniCallback(env, jComparator, copt) {
-  m_jSliceA = env->NewGlobalRef(DirectSliceJni::construct0(env));
-  m_jSliceB = env->NewGlobalRef(DirectSliceJni::construct0(env));
-  m_jSliceLimit = env->NewGlobalRef(DirectSliceJni::construct0(env));
+DirectAssociativeMergeOprJniCallback::DirectAssociativeMergeOprJniCallback(
+    JNIEnv* env, jobject jAssociativeMergeOpr,
+    const AssociativeMergeOprJniCallbackOptions* mopt) :
+    BaseAssociativeMergeOprJniCallback(env, jAssociativeMergeOpr, mopt) {
+  m_jKeySlice = env->NewGlobalRef(DirectSliceJni::construct0(env));
+  m_jExistingValueSlice = env->NewGlobalRef(DirectSliceJni::construct0(env));
+  m_jValueSlice = env->NewGlobalRef(DirectSliceJni::construct0(env));
 }
 
-DirectComparatorJniCallback::~DirectComparatorJniCallback() {
+DirectAssociativeMergeOprJniCallback::~DirectAssociativeMergeOprJniCallback() {
   JNIEnv* m_env = getJniEnv();
-  m_env->DeleteGlobalRef(m_jSliceA);
-  m_env->DeleteGlobalRef(m_jSliceB);
-  m_env->DeleteGlobalRef(m_jSliceLimit);
-}*/
+  m_env->DeleteGlobalRef(m_jKeySlice);
+  m_env->DeleteGlobalRef(m_jExistingValueSlice);
+  m_env->DeleteGlobalRef(m_jValueSlice);
+}
 }  // namespace rocksdb
