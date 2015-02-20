@@ -30,8 +30,6 @@ BaseAssociativeMergeOprJniCallback::BaseAssociativeMergeOprJniCallback(
   m_name = JniUtil::copyString(env, jsName);  // also releases jsName
 
   m_jMergeMethodId = AbstractMergeOprJni::getMergeMethodId(env);
-
-  m_jNewValueStringBuilder = env->NewGlobalRef(DirectSliceJni::construct0(env));
 }
 
 /**
@@ -48,41 +46,62 @@ const char* BaseAssociativeMergeOprJniCallback::Name() const {
   return m_name.c_str();
 }
 
-bool BaseAssociativeMergeOprJniCallback::Merge(const Slice& key, const Slice* existing_value,
-                                                   const Slice& value, std::string* new_value,
-                                                   Logger* logger) const {
+bool BaseAssociativeMergeOprJniCallback::Merge(const Slice& key,
+                                               const Slice* existing_value,
+                                               const Slice& value,
+                                               std::string* new_value,
+                                               Logger* logger) const {
   JNIEnv* m_env = getJniEnv();
 
   // TODO(pshareghi): slice objects can potentially be cached using thread
-  // local variables to avoid locking. Could make this configurable depending on
-  // performance.
+  // local variables to avoid locking. Could make this configurable depending
+  // on performance.
   mtx_merge->Lock();
 
   AbstractSliceJni::setHandle(m_env, m_jKeySlice, &key);
   AbstractSliceJni::setHandle(m_env, m_jExistingValueSlice, existing_value);
   AbstractSliceJni::setHandle(m_env, m_jValueSlice, &value);
-  
-  jbyteArray jNewValue =
-    m_env->CallBooleanMethod(m_jAssociativeMergeOpr, m_jMergeMethodId, m_jKeySlice,
+
+  bool success;
+
+  jbyteArray jNewValue = (jbyteArray) m_env->CallObjectMethod(
+      m_jAssociativeMergeOpr, m_jMergeMethodId, m_jKeySlice,
       m_jExistingValueSlice, m_jValueSlice);
 
-  // A non-null jNewValue indictaes success
-  bool resultFlag;
-  
-  if (jNewValue != NULL) {
-    int len = env->GetArrayLength(jNewValue);
-    char* cppNewValue = new char[len];
-	env->GetByteArrayRegion(jNewValue, 0, len, cppNewValue);
-	new_value->assign(cppNewValue);
-	delete cppNewValue;
+  // Check if an exception occurred
+  jthrowable exception = m_env->ExceptionOccurred();
+
+  if (exception == NULL) {
+    // There was no exception. Great! Make sure merge result is not NULL
+    if (jNewValue != NULL) {
+      int len = m_env->GetArrayLength(jNewValue);
+      char* cppNewValue = new char[len];
+      m_env->GetByteArrayRegion(jNewValue, 0, len, (jbyte*) cppNewValue);
+      new_value->assign(cppNewValue);
+      delete cppNewValue;
+      success = true;
+    } else {
+      // Merge result was NULL, merge failed
+      new_value->clear();
+      success = false;
+    }
+
   } else {
-	new_value->clear();   
+    // An exception occurred, re-throw as RocksDBException
+    success = false;
+
+    m_env->ExceptionDescribe();
+    m_env->ExceptionClear();
+    RocksDBExceptionJni::ThrowNew(
+        m_env, "Java exception happened during merge java callback!",
+        exception);
   }
 
+  // Finally, unlock and detach
   mtx_merge->Unlock();
   m_jvm->DetachCurrentThread();
 
-  return resultFlag;
+  return success;
 }
 
 BaseAssociativeMergeOprJniCallback::~BaseAssociativeMergeOprJniCallback() {
@@ -96,9 +115,9 @@ BaseAssociativeMergeOprJniCallback::~BaseAssociativeMergeOprJniCallback() {
   // the env jvm->DetachCurrentThread();
 }
 
-AssoicativeMergeOprJniCallback::AssoicativeMergeOprJniCallback
+// AssoicativeMergeOprJniCallback::AssoicativeMergeOprJniCallback
 
-ComparatorJniCallback::ComparatorJniCallback(
+/*ComparatorJniCallback::ComparatorJniCallback(
     JNIEnv* env, jobject jComparator,
     const ComparatorJniCallbackOptions* copt) :
     BaseComparatorJniCallback(env, jComparator, copt) {
@@ -128,5 +147,5 @@ DirectComparatorJniCallback::~DirectComparatorJniCallback() {
   m_env->DeleteGlobalRef(m_jSliceA);
   m_env->DeleteGlobalRef(m_jSliceB);
   m_env->DeleteGlobalRef(m_jSliceLimit);
-}
+}*/
 }  // namespace rocksdb

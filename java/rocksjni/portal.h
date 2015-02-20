@@ -104,6 +104,20 @@ class RocksDBExceptionJni {
 
     env->Throw((jthrowable)env->NewObject(getJClass(env), mid, msg));
   }
+
+  // Create and throw a java RocksDBException wrapped around the given
+  // java Throwable.
+  static void ThrowNew(JNIEnv* env, const char* msg, jthrowable& cause) {
+    jstring jMsg = env->NewStringUTF(msg);
+
+    // get the constructor id of org.rocksdb.RocksDBException
+    static jmethodID mid = env->GetMethodID(
+        getJClass(env), "<init>",
+        "(Ljava/lang/String;Ljava/lang/Throwable;)V");
+    assert(mid != nullptr);
+
+    env->Throw((jthrowable) env->NewObject(getJClass(env), mid, jMsg, cause));
+  }
 };
 
 // The portal class for org.rocksdb.Options
