@@ -1,4 +1,5 @@
 NATIVE_JAVA_CLASSES = org.rocksdb.AbstractComparator\
+	org.rocksdb.AbstractDeque\
 	org.rocksdb.AbstractMergeOpr\
 	org.rocksdb.AbstractSlice\
 	org.rocksdb.AssociativeMergeOpr\
@@ -6,6 +7,7 @@ NATIVE_JAVA_CLASSES = org.rocksdb.AbstractComparator\
 	org.rocksdb.BackupableDBOptions\
 	org.rocksdb.BlockBasedTableConfig\
 	org.rocksdb.BloomFilter\
+	org.rocksdb.ByteArrayDeque\
 	org.rocksdb.Checkpoint\
 	org.rocksdb.ColumnFamilyHandle\
 	org.rocksdb.ColumnFamilyOptions\

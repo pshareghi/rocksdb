@@ -18,57 +18,66 @@ import java.util.Iterator;
  *   @see org.rocksdb.SliceDeque
  *   @see org.rocksdb.DirectSliceDeque
  */
-abstract class AbstractDeque<T> extends RocksObject implements Deque<T> {
+public abstract class ByteArrayDeque extends AbstractDeque<byte[]> {
   
-  @Override public abstract void addFirst(T t);
+  @Override public abstract void addFirst(byte[] elem);
 
-  @Override public abstract void addLast(T t);
+  @Override public abstract void addLast(byte[] elem);
 
-  @Override public abstract boolean offerFirst(T t);
+  @Override public abstract boolean offerFirst(byte[] elem);
 
-  @Override public abstract boolean offerLast(T t);
+  @Override public abstract boolean offerLast(byte[] elem);
 
-  @Override public abstract T removeFirst();
+  @Override public abstract byte[] removeFirst();
 
-  @Override public abstract T removeLast();
+  @Override public abstract byte[] removeLast();
 
-  @Override public abstract T pollFirst();
+  @Override public abstract byte[] pollFirst();
 
-  @Override public abstract T pollLast();
+  @Override public abstract byte[] pollLast();
 
-  @Override public abstract T getFirst();
+  @Override public abstract byte[] getFirst();
 
-  @Override public abstract T getLast();
+  @Override public abstract byte[] getLast();
 
-  @Override public abstract T peekFirst();
+  @Override public abstract byte[] peekFirst();
 
-  @Override public abstract T peekLast();
+  @Override public abstract byte[] peekLast();
 
   @Override public abstract boolean removeFirstOccurrence(Object o);
 
   @Override public abstract boolean removeLastOccurrence(Object o);
 
-  @Override public abstract boolean add(T t);
+  @Override public abstract boolean add(byte[] elem);
 
-  @Override public abstract boolean offer(T t);
+  @Override public abstract boolean offer(byte[] elem);
 
-  @Override public abstract T remove();
+  @Override public abstract byte[] remove();
 
-  @Override public abstract T poll();
+  @Override public abstract byte[] poll();
 
-  @Override public abstract T element();
+  @Override public abstract byte[] element();
 
-  @Override public abstract T peek();
+  @Override public byte[] peek() {
+    assert (isInitialized());
+    return peek0(nativeHandle_);
+  }
 
-  @Override public abstract void push(T t);
+  @Override public void push(byte[] elem) {
+    assert (isInitialized());
+    push0(nativeHandle_, elem);
+  }
 
-  @Override public abstract T pop();
+  @Override public byte[] pop() {
+    assert (isInitialized());
+    return pop0(nativeHandle_); 
+  }
 
   @Override public abstract boolean remove(Object o);
 
   @Override public abstract boolean containsAll(Collection<?> c);
 
-  @Override public abstract boolean addAll(Collection<? extends T> c);
+  @Override public abstract boolean addAll(Collection<? extends byte[]> c);
 
   @Override public abstract boolean removeAll(Collection<?> c);
 
@@ -91,13 +100,13 @@ abstract class AbstractDeque<T> extends RocksObject implements Deque<T> {
     return isEmpty0(nativeHandle_);
   }
 
-  @Override public abstract Iterator<T> iterator();
+  @Override public abstract Iterator<byte[]> iterator();
 
   @Override public abstract Object[] toArray();
 
-  @Override public abstract <T1> T1[] toArray(T1[] a);
+  @Override public abstract <T> T[] toArray(T[] a);
 
-  @Override public abstract Iterator<T> descendingIterator();
+  @Override public abstract Iterator<byte[]> descendingIterator();
 
   /**
    * Creates a string representation of the data
@@ -128,7 +137,10 @@ abstract class AbstractDeque<T> extends RocksObject implements Deque<T> {
     assert(isInitialized());
     disposeInternal(nativeHandle_);
   }
-
+  
+  private native byte[] peek0(long handle);
+  private native void push0(long handle, byte[] elem);
+  private native byte[] pop0(long handle);
   private native int size0(long handle);
   private native boolean isEmpty0(long handle);
   private native String toString0(long handle, boolean hex);
