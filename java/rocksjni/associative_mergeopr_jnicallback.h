@@ -12,7 +12,6 @@
 
 #include <jni.h>
 
-#include <deque>
 #include <string>
 
 #include "port/port.h"

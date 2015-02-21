@@ -46,7 +46,7 @@ struct MergeOprJniCallbackOptions {
  * functions, by reuse via setHandle we are a lot
  * faster; Unfortunately this means that we have to
  * introduce independent locking in regions of each of those methods
- * via the mutexs mtx_fullMerge, mtx_partialMerge,
+ * via the mutex mtx_fullMerge, mtx_partialMerge,
  * and mtx_partialMergeMulti.
  */
 class BaseMergeOprJniCallback : public MergeOperator {
@@ -55,35 +55,36 @@ class BaseMergeOprJniCallback : public MergeOperator {
                           const MergeOprJniCallbackOptions* mopt);
   virtual ~BaseMergeOprJniCallback();
   virtual const char* Name() const;
+
   virtual bool FullMerge(const Slice& key, const Slice* existing_value,
                          const std::deque<std::string>& operand_list,
                          std::string* new_value, Logger* logger) const;
+
   virtual bool PartialMerge(const Slice& key, const Slice& left_operand,
                             const Slice& right_operand, std::string* new_value,
                             Logger* logger) const;
+
   virtual bool PartialMergeMulti(const Slice& key,
                                  const std::deque<Slice>& operand_list,
                                  std::string* new_value, Logger* logger) const;
 
  private:
-  // used for synchronization in FullMerge method
-  port::Mutex* mtx_fullMerge;
-  // used for synchronization in PartialMerge method
-  port::Mutex* mtx_partialMerge;
-  // used for synchronization in PartialMergeMulti method
-  port::Mutex* mtx_partialMergeMulti;
+  // used for synchronization in java callback methods
+  port::Mutex* mtx_merge;
 
   JavaVM* m_jvm;
   jobject m_jMergeOpr;
   std::string m_name;
+
   jmethodID m_jFullMergeMethodId;
   jmethodID m_jPartialMergeMethodId;
   jmethodID m_jPartialMergeMultiMethodId;
 
  protected:
   JNIEnv* getJniEnv() const;
-  jobject m_jSliceA;
-  jobject m_jSliceB;
+  jobject m_jKeySlice;
+  jobject m_jExistingValueSlice;
+  jobject m_jValueSlice;
 };
 
 class MergeOprJniCallback : public BaseMergeOprJniCallback {
