@@ -18,57 +18,81 @@ import java.util.Iterator;
  *   @see org.rocksdb.SliceDeque
  *   @see org.rocksdb.DirectSliceDeque
  */
-abstract class AbstractDeque<T> extends RocksObject implements Deque<T> {
+abstract class AbstractDeque<E> extends RocksObject implements Deque<E> {
   
-  @Override public abstract void addFirst(T t);
+  @Override public abstract void addFirst(E e);
 
-  @Override public abstract void addLast(T t);
+  @Override public abstract void addLast(E e);
 
-  @Override public abstract boolean offerFirst(T t);
+  @Override public boolean offerFirst(E e) {
+    addFirst(e);
+    return true;
+  }
 
-  @Override public abstract boolean offerLast(T t);
+  @Override public boolean offerLast(E e) {
+    addLast(e);
+    return true;
+  }
 
-  @Override public abstract T removeFirst();
+  @Override public abstract E removeFirst();
 
-  @Override public abstract T removeLast();
+  @Override public abstract E removeLast();
 
-  @Override public abstract T pollFirst();
+  @Override public abstract E pollFirst();
 
-  @Override public abstract T pollLast();
+  @Override public abstract E pollLast();
 
-  @Override public abstract T getFirst();
+  @Override public abstract E getFirst();
 
-  @Override public abstract T getLast();
+  @Override public abstract E getLast();
 
-  @Override public abstract T peekFirst();
+  @Override public abstract E peekFirst();
 
-  @Override public abstract T peekLast();
+  @Override public abstract E peekLast();
 
   @Override public abstract boolean removeFirstOccurrence(Object o);
 
   @Override public abstract boolean removeLastOccurrence(Object o);
 
-  @Override public abstract boolean add(T t);
+  @Override public boolean add(E e) {
+    addLast(e);
+    return true;
+  }
 
-  @Override public abstract boolean offer(T t);
+  @Override public boolean offer(E e) {
+    offerLast(e);
+    return true;
+  }
 
-  @Override public abstract T remove();
+  @Override public E remove() {
+    return removeFirst();
+  }
 
-  @Override public abstract T poll();
+  @Override public E poll() {
+    return pollFirst();
+  }
 
-  @Override public abstract T element();
+  @Override public E element() {
+    return getFirst();
+  }
 
-  @Override public abstract T peek();
+  @Override public E peek() {
+    return peekFirst();
+  }
 
-  @Override public abstract void push(T t);
+  @Override public void push(E e) {
+    addFirst(e);
+  }
 
-  @Override public abstract T pop();
+  @Override public E pop() {
+    return removeFirst();
+  }
 
   @Override public abstract boolean remove(Object o);
 
   @Override public abstract boolean containsAll(Collection<?> c);
 
-  @Override public abstract boolean addAll(Collection<? extends T> c);
+  @Override public abstract boolean addAll(Collection<? extends E> c);
 
   @Override public abstract boolean removeAll(Collection<?> c);
 
@@ -91,13 +115,13 @@ abstract class AbstractDeque<T> extends RocksObject implements Deque<T> {
     return isEmpty0(nativeHandle_);
   }
 
-  @Override public abstract Iterator<T> iterator();
+  @Override public abstract Iterator<E> iterator();
 
   @Override public abstract Object[] toArray();
 
-  @Override public abstract <T1> T1[] toArray(T1[] a);
+  @Override public abstract <T> T[] toArray(T[] a);
 
-  @Override public abstract Iterator<T> descendingIterator();
+  @Override public abstract Iterator<E> descendingIterator();
 
   /**
    * Creates a string representation of the data
