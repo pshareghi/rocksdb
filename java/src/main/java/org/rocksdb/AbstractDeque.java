@@ -98,22 +98,13 @@ abstract class AbstractDeque<E> extends RocksObject implements Deque<E> {
 
   @Override public abstract boolean retainAll(Collection<?> c);
 
-  @Override public void clear() {
-    assert (isInitialized());
-    clear0(nativeHandle_);
-  }
+  @Override public abstract void clear();
 
   @Override public abstract boolean contains(Object o);
 
-  @Override public int size() {
-    assert (isInitialized());
-    return size0(nativeHandle_);
-  }
+  @Override public abstract int size();
 
-  @Override public boolean isEmpty() {
-    assert (isInitialized());
-    return isEmpty0(nativeHandle_);
-  }
+  @Override public abstract boolean isEmpty();
 
   @Override public abstract Iterator<E> iterator();
 
@@ -131,10 +122,7 @@ abstract class AbstractDeque<E> extends RocksObject implements Deque<E> {
    *
    * @return The string representation of the data.
    */
-  public String toString(final boolean hex) {
-    assert (isInitialized());
-    return toString0(nativeHandle_, hex);
-  }
+  public abstract String toString(final boolean hex);
 
   @Override
   public String toString() {
@@ -153,10 +141,6 @@ abstract class AbstractDeque<E> extends RocksObject implements Deque<E> {
     disposeInternal(nativeHandle_);
   }
 
-  private native int size0(long handle);
-  private native boolean isEmpty0(long handle);
-  private native String toString0(long handle, boolean hex);
-  private native void clear0(long handle);
   private native void disposeInternal(long handle);
 
 }
