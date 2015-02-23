@@ -136,11 +136,6 @@ abstract class AbstractDeque<E> extends RocksObject implements Deque<E> {
    * Otherwise an undefined behavior will occur.
    */
   @Override
-  protected void disposeInternal() {
-    assert(isInitialized());
-    disposeInternal(nativeHandle_);
-  }
-
-  private native void disposeInternal(long handle);
+  protected abstract void disposeInternal();
 
 }
