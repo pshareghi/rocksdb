@@ -84,7 +84,16 @@ class BaseMergeOprJniCallback : public MergeOperator {
   JNIEnv* getJniEnv() const;
   jobject m_jKeySlice;
   jobject m_jExistingValueSlice;
-  jobject m_jValueSlice;
+  jobject m_jByteArrayOperandList;
+
+  jobject m_jLeftOperand;
+  jobject m_jRightOperand;
+
+  jobject m_jSliceOperandList;
+
+  virtual void setSliceOperandListHandle(
+      JNIEnv* env, const std::deque<Slice>& operand_list) const = 0;
+  virtual jobject newSliceOperandList(JNIEnv* env) const = 0;
 };
 
 class MergeOprJniCallback : public BaseMergeOprJniCallback {
@@ -92,6 +101,11 @@ class MergeOprJniCallback : public BaseMergeOprJniCallback {
   MergeOprJniCallback(JNIEnv* env, jobject jMergeOpr,
                       const MergeOprJniCallbackOptions* mopt);
   ~MergeOprJniCallback();
+
+ protected:
+  void setSliceOperandListHandle(JNIEnv* env,
+                                 const std::deque<Slice>& operand_list) const;
+  jobject newSliceOperandList(JNIEnv* env) const;
 };
 
 class DirectMergeOprJniCallback : public BaseMergeOprJniCallback {
@@ -99,6 +113,11 @@ class DirectMergeOprJniCallback : public BaseMergeOprJniCallback {
   DirectMergeOprJniCallback(JNIEnv* env, jobject jDirectMergeOpr,
                             const MergeOprJniCallbackOptions* mopt);
   ~DirectMergeOprJniCallback();
+
+ protected:
+  void setSliceOperandListHandle(JNIEnv* env,
+                                 const std::deque<Slice>& operand_list) const;
+  jobject newSliceOperandList(JNIEnv* env) const;
 };
 }  // namespace rocksdb
 

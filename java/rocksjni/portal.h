@@ -11,6 +11,7 @@
 #define JAVA_ROCKSJNI_PORTAL_H_
 
 #include <jni.h>
+#include <deque>
 #include <limits>
 #include <string>
 #include <vector>
@@ -488,6 +489,24 @@ class DirectSliceJni {
     return env->NewObject(getJClass(env), mid);
   }
 };
+
+class ByteArrayDequeJni : public RocksDBNativeClass<
+const std::deque<std::string>*, ByteArrayDequeJni> {
+ public:
+  // Get the java class id of org.rocksdb.ByteArrayDeque.
+  static jclass getJClass(JNIEnv* env) {
+    jclass jclazz = env->FindClass("org/rocksdb/ByteArrayDeque");
+    assert(jclazz != nullptr);
+    return jclazz;
+  }
+
+  static jobject construct0(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env), "<init>", "()V");
+    assert(mid != nullptr);
+    return env->NewObject(getJClass(env), mid);
+  }
+};
+
 
 class StringBuilderJni {
  public:

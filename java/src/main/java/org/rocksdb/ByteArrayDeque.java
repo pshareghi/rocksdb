@@ -17,6 +17,11 @@ import java.util.Iterator;
  */
 public abstract class ByteArrayDeque extends AbstractDeque<byte[]> {
   
+  // Used by ByteArrayDequeJni
+  public ByteArrayDeque() {
+    
+  }
+  
   @Override public void addFirst(byte[] e) {
     assert(isInitialized());
     addFirst0(nativeHandle_, e);
