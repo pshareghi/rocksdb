@@ -121,6 +121,66 @@ class RocksDBExceptionJni {
   }
 };
 
+// The portal class for Java Exceptions
+// java.lang.NullPointerException
+// java.lang.IllegalArgumentException
+// java.util.NoSuchElementException
+class ExceptionJni {
+ public:
+  // Get the jclass of java.lang.IllegalArgumentException
+    static jclass getNullPointerExceptionClass(JNIEnv* env) {
+      jclass jclazz = env->FindClass("java/lang/NullPointerException");
+      assert(jclazz != nullptr);
+      return jclazz;
+    }
+
+  // Get the jclass of java.lang.IllegalArgumentException
+  static jclass getIllegalArgumentExceptionClass(JNIEnv* env) {
+    jclass jclazz = env->FindClass("java/lang/IllegalArgumentException");
+    assert(jclazz != nullptr);
+    return jclazz;
+  }
+
+    // Get the jclass of java.util.NoSuchElementException
+      static jclass getNoSuchElementExceptionClass(JNIEnv* env) {
+        jclass jclazz = env->FindClass("java/util/NoSuchElementException");
+        assert(jclazz != nullptr);
+        return jclazz;
+      }
+
+  // Create and throw a java exception by converting the input
+  // Status to an RocksDBException.
+  //
+  // In case s.ok() is true, then this function will not throw any
+  // exception.
+  static void ThrowNew(JNIEnv* env, Status s) {
+    if (s.ok()) {
+      return;
+    }
+    jstring msg = env->NewStringUTF(s.ToString().c_str());
+    // get the constructor id of org.rocksdb.RocksDBException
+    static jmethodID mid = env->GetMethodID(
+        getJClass(env), "<init>", "(Ljava/lang/String;)V");
+    assert(mid != nullptr);
+
+    env->Throw((jthrowable)env->NewObject(getJClass(env), mid, msg));
+  }
+
+  // Create and throw a java RocksDBException wrapped around the given
+  // java Throwable.
+  static void ThrowNew(JNIEnv* env, const char* msg, jthrowable& cause) {
+    jstring jMsg = env->NewStringUTF(msg);
+
+    // get the constructor id of org.rocksdb.RocksDBException
+    static jmethodID mid = env->GetMethodID(
+        getJClass(env), "<init>",
+        "(Ljava/lang/String;Ljava/lang/Throwable;)V");
+    assert(mid != nullptr);
+
+    env->Throw((jthrowable) env->NewObject(getJClass(env), mid, jMsg, cause));
+  }
+};
+
 // The portal class for org.rocksdb.Options
 class OptionsJni : public RocksDBNativeClass<
     rocksdb::Options*, OptionsJni> {

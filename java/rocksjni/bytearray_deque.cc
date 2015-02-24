@@ -38,8 +38,9 @@ void JNICALL Java_org_rocksdb_ByteArrayDeque_addFirst0(JNIEnv* env,
  * Method:    addLast0
  * Signature: (J[B)V
  */
-void JNICALL Java_org_rocksdb_ByteArrayDeque_addLast0
-  (JNIEnv* env, jobject jobj, jlong handle, jbyteArray elem) {
+void JNICALL Java_org_rocksdb_ByteArrayDeque_addLast0(JNIEnv* env, jobject jobj,
+                                                      jlong handle,
+                                                      jbyteArray elem) {
   // Convert byte[] to std::string
   const auto ptr = rocksdb::JniUtil::byteArrayToStdString(env, elem);
   const auto str = std::shared_ptr<std::string>(ptr);
@@ -54,8 +55,9 @@ void JNICALL Java_org_rocksdb_ByteArrayDeque_addLast0
  * Method:    removeFirst0
  * Signature: (J)[B
  */
-jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_removeFirst0
-  (JNIEnv* env, jobject jobj, jlong handle) {
+jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_removeFirst0(JNIEnv* env,
+                                                                jobject jobj,
+                                                                jlong handle) {
   const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
 
   const std::string& str = deque->front();
@@ -71,8 +73,9 @@ jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_removeFirst0
  * Method:    removeLast0
  * Signature: (J)[B
  */
-jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_removeLast0
-  (JNIEnv* env, jobject jobj, jlong handle) {
+jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_removeLast0(JNIEnv* env,
+                                                               jobject jobj,
+                                                               jlong handle) {
   const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
 
   std::string& str(deque->back());
@@ -82,3 +85,117 @@ jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_removeLast0
 
   return elem;
 }
+
+/*
+ * Class:     org_rocksdb_ByteArrayDeque
+ * Method:    pollFirst0
+ * Signature: (J)[B
+ */
+jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_pollFirst0(JNIEnv* env,
+                                                              jobject jobj,
+                                                              jlong handle) {
+  const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
+
+  if (deque->empty()) {
+    return NULL;
+  }
+
+  const std::string& str = deque->front();
+  jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
+
+  return elem;
+}
+
+/*
+ * Class:     org_rocksdb_ByteArrayDeque
+ * Method:    pollLast0
+ * Signature: (J)[B
+ */
+jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_pollLast0(JNIEnv* env,
+                                                             jobject jobj,
+                                                             jlong handle) {
+  const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
+
+  if (deque->empty()) {
+    return NULL;
+  }
+
+  const std::string& str = deque->back();
+  jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
+
+  return elem;
+}
+
+/*
+ * Class:     org_rocksdb_ByteArrayDeque
+ * Method:    getFirst0
+ * Signature: (J)[B
+ */
+jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_getFirst0(JNIEnv* env,
+                                                             jobject jobj,
+                                                             jlong handle) {
+  const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
+
+  const std::string& str = deque->front();
+  jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
+
+  return elem;
+}
+
+/*
+ * Class:     org_rocksdb_ByteArrayDeque
+ * Method:    getLast0
+ * Signature: (J)[B
+ */
+jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_getLast0(JNIEnv* env,
+                                                            jobject jobj,
+                                                            jlong handle) {
+  const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
+
+  const std::string& str = deque->back();
+  jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
+
+  return elem;
+}
+
+/*
+ * Class:     org_rocksdb_ByteArrayDeque
+ * Method:    getLast0
+ * Signature: (J)[B
+ */
+jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_peekFirst0(JNIEnv* env,
+                                                            jobject jobj,
+                                                            jlong handle) {
+  const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
+
+  if (deque->empty()) {
+      return NULL;
+    }
+
+  const std::string& str = deque->front();
+  jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
+
+  return elem;
+}
+
+/*
+ * Class:     org_rocksdb_ByteArrayDeque
+ * Method:    getLast0
+ * Signature: (J)[B
+ */
+jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_peekLast0(JNIEnv* env,
+                                                            jobject jobj,
+                                                            jlong handle) {
+  const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
+
+  if (deque->empty()) {
+      return NULL;
+    }
+
+  const std::string& str = deque->back();
+  jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
+
+  return elem;
+}
+
+
