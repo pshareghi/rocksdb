@@ -92,7 +92,7 @@ class BaseMergeOprJniCallback : public MergeOperator {
   jobject m_jSliceOperandList;
 
   virtual void setSliceOperandListHandle(
-      JNIEnv* env, const std::deque<Slice>& operand_list) const = 0;
+      JNIEnv* env, const std::deque<Slice>* operand_list) const = 0;
   virtual jobject newSliceOperandList(JNIEnv* env) const = 0;
 };
 
@@ -104,7 +104,7 @@ class MergeOprJniCallback : public BaseMergeOprJniCallback {
 
  protected:
   void setSliceOperandListHandle(JNIEnv* env,
-                                 const std::deque<Slice>& operand_list) const;
+                                 const std::deque<Slice>* operand_list) const;
   jobject newSliceOperandList(JNIEnv* env) const;
 };
 
@@ -116,7 +116,7 @@ class DirectMergeOprJniCallback : public BaseMergeOprJniCallback {
 
  protected:
   void setSliceOperandListHandle(JNIEnv* env,
-                                 const std::deque<Slice>& operand_list) const;
+                                 const std::deque<Slice>* operand_list) const;
   jobject newSliceOperandList(JNIEnv* env) const;
 };
 }  // namespace rocksdb

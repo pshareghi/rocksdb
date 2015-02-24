@@ -507,6 +507,39 @@ const std::deque<std::string>*, ByteArrayDequeJni> {
   }
 };
 
+class SliceDequeJni : public RocksDBNativeClass<
+const std::deque<rocksdb::Slice>*, SliceDequeJni> {
+ public:
+  // Get the java class id of org.rocksdb.SliceDeque.
+  static jclass getJClass(JNIEnv* env) {
+    jclass jclazz = env->FindClass("org/rocksdb/SliceDeque");
+    assert(jclazz != nullptr);
+    return jclazz;
+  }
+
+  static jobject construct0(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env), "<init>", "()V");
+    assert(mid != nullptr);
+    return env->NewObject(getJClass(env), mid);
+  }
+};
+
+class DirectSliceDequeJni : public RocksDBNativeClass<
+const std::deque<rocksdb::Slice>*, DirectSliceDequeJni> {
+ public:
+  // Get the java class id of org.rocksdb.DircetSliceDeque.
+  static jclass getJClass(JNIEnv* env) {
+    jclass jclazz = env->FindClass("org/rocksdb/DirectSliceDeque");
+    assert(jclazz != nullptr);
+    return jclazz;
+  }
+
+  static jobject construct0(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env), "<init>", "()V");
+    assert(mid != nullptr);
+    return env->NewObject(getJClass(env), mid);
+  }
+};
 
 class StringBuilderJni {
  public:

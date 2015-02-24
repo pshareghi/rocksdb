@@ -11,8 +11,7 @@
 
 namespace rocksdb {
 BaseMergeOprJniCallback::BaseMergeOprJniCallback(
-    JNIEnv* env, jobject jMergeOpr,
-    const MergeOprJniCallbackOptions* mopt) :
+    JNIEnv* env, jobject jMergeOpr, const MergeOprJniCallbackOptions* mopt) :
     mtx_merge(new port::Mutex(mopt->use_adaptive_mutex)) {
   // Note: merge method may be accessed by multiple threads,
   // so we ref the jvm not the env
@@ -26,8 +25,7 @@ BaseMergeOprJniCallback::BaseMergeOprJniCallback(
   // Note: The name of a MergeOpr will not change during it's
   // lifetime, so we cache it in a global var
   jmethodID jNameMethodId = AbstractMergeOprJni::getNameMethodId(env);
-  jstring jsName = (jstring) env->CallObjectMethod(m_jMergeOpr,
-                                                   jNameMethodId);
+  jstring jsName = (jstring) env->CallObjectMethod(m_jMergeOpr, jNameMethodId);
   m_name = JniUtil::copyString(env, jsName);  // also releases jsName
 
   m_jFullMergeMethodId = AbstractMergeOprJni::getFullMergeMethodId(env);
@@ -68,8 +66,8 @@ bool BaseMergeOprJniCallback::FullMerge(
   bool success;
 
   jbyteArray jNewValue = (jbyteArray) env->CallObjectMethod(
-      m_jMergeOpr, m_jFullMergeMethodId, m_jKeySlice,
-      m_jExistingValueSlice, m_jByteArrayOperandList);
+      m_jMergeOpr, m_jFullMergeMethodId, m_jKeySlice, m_jExistingValueSlice,
+      m_jByteArrayOperandList);
 
   // Check if an exception occurred
   jthrowable exception = env->ExceptionOccurred();
@@ -80,7 +78,7 @@ bool BaseMergeOprJniCallback::FullMerge(
       int len = env->GetArrayLength(jNewValue);
       char* cppNewValue = new char[len];
       env->GetByteArrayRegion(jNewValue, 0, len,
-          reinterpret_cast<jbyte*>(cppNewValue));
+                              reinterpret_cast<jbyte*>(cppNewValue));
       new_value->assign(cppNewValue);
       delete cppNewValue;
       success = true;
@@ -97,8 +95,7 @@ bool BaseMergeOprJniCallback::FullMerge(
     env->ExceptionDescribe();
     env->ExceptionClear();
     RocksDBExceptionJni::ThrowNew(
-        env, "Java exception happened during merge java callback!",
-        exception);
+        env, "Java exception happened during merge java callback!", exception);
   }
 
   // Finally, unlock and detach
@@ -127,8 +124,8 @@ bool BaseMergeOprJniCallback::PartialMerge(const Slice& key,
   bool success;
 
   jbyteArray jNewValue = (jbyteArray) env->CallObjectMethod(
-      m_jMergeOpr, m_jPartialMergeMethodId, m_jKeySlice,
-      m_jLeftOperand, m_jRightOperand);
+      m_jMergeOpr, m_jPartialMergeMethodId, m_jKeySlice, m_jLeftOperand,
+      m_jRightOperand);
 
   // Check if an exception occurred
   jthrowable exception = env->ExceptionOccurred();
@@ -139,7 +136,7 @@ bool BaseMergeOprJniCallback::PartialMerge(const Slice& key,
       int len = env->GetArrayLength(jNewValue);
       char* cppNewValue = new char[len];
       env->GetByteArrayRegion(jNewValue, 0, len,
-          reinterpret_cast<jbyte*>(cppNewValue));
+                              reinterpret_cast<jbyte*>(cppNewValue));
       new_value->assign(cppNewValue);
       delete cppNewValue;
       success = true;
@@ -156,8 +153,7 @@ bool BaseMergeOprJniCallback::PartialMerge(const Slice& key,
     env->ExceptionDescribe();
     env->ExceptionClear();
     RocksDBExceptionJni::ThrowNew(
-        env, "Java exception happened during merge java callback!",
-        exception);
+        env, "Java exception happened during merge java callback!", exception);
   }
 
   // Finally, unlock and detach
@@ -178,13 +174,13 @@ bool BaseMergeOprJniCallback::PartialMergeMulti(
   mtx_merge->Lock();
 
   AbstractSliceJni::setHandle(env, m_jKeySlice, &key);
-  setSliceOperandListHandle(env, operand_list);
+  setSliceOperandListHandle(env, &operand_list);
 
   bool success;
 
   jbyteArray jNewValue = (jbyteArray) env->CallObjectMethod(
-      m_jMergeOpr, m_jPartialMergeMethodId, m_jKeySlice,
-      m_jLeftOperand, m_jRightOperand);
+      m_jMergeOpr, m_jPartialMergeMethodId, m_jKeySlice, m_jLeftOperand,
+      m_jRightOperand);
 
   // Check if an exception occurred
   jthrowable exception = env->ExceptionOccurred();
@@ -195,7 +191,7 @@ bool BaseMergeOprJniCallback::PartialMergeMulti(
       int len = env->GetArrayLength(jNewValue);
       char* cppNewValue = new char[len];
       env->GetByteArrayRegion(jNewValue, 0, len,
-          reinterpret_cast<jbyte*>(cppNewValue));
+                              reinterpret_cast<jbyte*>(cppNewValue));
       new_value->assign(cppNewValue);
       delete cppNewValue;
       success = true;
@@ -212,8 +208,7 @@ bool BaseMergeOprJniCallback::PartialMergeMulti(
     env->ExceptionDescribe();
     env->ExceptionClear();
     RocksDBExceptionJni::ThrowNew(
-        env, "Java exception happened during merge java callback!",
-        exception);
+        env, "Java exception happened during merge java callback!", exception);
   }
 
   // Finally, unlock and detach
@@ -260,13 +255,13 @@ MergeOprJniCallback::~MergeOprJniCallback() {
   env->DeleteGlobalRef(m_jSliceOperandList);
 }
 
-void MergeOprJniCallback::setSliceOperandListHandle(JNIEnv* env, const std::deque<Slice>& operand_list) const {
-  //TODO: implement
+void MergeOprJniCallback::setSliceOperandListHandle(
+    JNIEnv* env, const std::deque<Slice>* operand_list) const {
+  SliceDequeJni::setHandle(env, m_jSliceOperandList, operand_list);
 }
 
 jobject MergeOprJniCallback::newSliceOperandList(JNIEnv* env) const {
-  //TODO: implement
-  return NULL;
+  return env->NewGlobalRef(SliceDequeJni::construct0(env));
 }
 
 DirectMergeOprJniCallback::DirectMergeOprJniCallback(
@@ -295,12 +290,12 @@ DirectMergeOprJniCallback::~DirectMergeOprJniCallback() {
   env->DeleteGlobalRef(m_jSliceOperandList);
 }
 
-void DirectMergeOprJniCallback::setSliceOperandListHandle(JNIEnv* env, const std::deque<Slice>& operand_list) const {
-  //TODO: implement
+void DirectMergeOprJniCallback::setSliceOperandListHandle(
+    JNIEnv* env, const std::deque<Slice>* operand_list) const {
+  DirectSliceDequeJni::setHandle(env, m_jSliceOperandList, operand_list);
 }
 
 jobject DirectMergeOprJniCallback::newSliceOperandList(JNIEnv* env) const {
-  //TODO: implement
-  return NULL;
+  return env->NewGlobalRef(SliceDequeJni::construct0(env));
 }
 }  // namespace rocksdb
