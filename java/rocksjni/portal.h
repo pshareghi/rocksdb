@@ -860,6 +860,28 @@ class JniUtil {
 
       env->ReleaseByteArrayElements(jkey, key, JNI_ABORT);
     }
+
+    /*
+     * Returns a new std::string with the data of the given java byte[]
+     */
+    static std::string* byteArrayToStdString(JNIEnv* env, jbyteArray elem) {
+      const int len = env->GetArrayLength(elem);
+      jbyte* ptrData = new jbyte[len];
+      env->GetByteArrayRegion(elem, 0, len, ptrData);
+      auto str = new std::string((char*) ptrData);
+      return str;
+    }
+
+    /*
+     * Returns a new std::string with the data of the given java byte[]
+     */
+    static jbyteArray stdStringToByteArray(JNIEnv* env,
+                                           const std::string& str) {
+      int len = str.length();
+      jbyteArray elem = env->NewByteArray(len);
+      env->SetByteArrayRegion(elem, 0, len, (jbyte*) str.c_str());
+      return elem;
+    }
 };
 
 }  // namespace rocksdb
