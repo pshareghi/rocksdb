@@ -121,63 +121,63 @@ class RocksDBExceptionJni {
   }
 };
 
+
 // The portal class for Java Exceptions
-// java.lang.NullPointerException
-// java.lang.IllegalArgumentException
-// java.util.NoSuchElementException
 class ExceptionJni {
  public:
-  // Get the jclass of java.lang.IllegalArgumentException
-    static jclass getNullPointerExceptionClass(JNIEnv* env) {
-      jclass jclazz = env->FindClass("java/lang/NullPointerException");
-      assert(jclazz != nullptr);
-      return jclazz;
-    }
-
-  // Get the jclass of java.lang.IllegalArgumentException
-  static jclass getIllegalArgumentExceptionClass(JNIEnv* env) {
-    jclass jclazz = env->FindClass("java/lang/IllegalArgumentException");
+  // Get the jclass for the given fully qualified name.
+  // Example className: "java/lang/IllegalArgumentException"
+  static jclass getJClass(JNIEnv* env, const char* className) {
+    jclass jclazz = env->FindClass(className);
     assert(jclazz != nullptr);
     return jclazz;
   }
 
-    // Get the jclass of java.util.NoSuchElementException
-      static jclass getNoSuchElementExceptionClass(JNIEnv* env) {
-        jclass jclazz = env->FindClass("java/util/NoSuchElementException");
-        assert(jclazz != nullptr);
-        return jclazz;
-      }
-
-  // Create and throw a java exception by converting the input
-  // Status to an RocksDBException.
+  // Create and throw a java exception.
   //
-  // In case s.ok() is true, then this function will not throw any
+  // In case className is NULL, then this function will not throw any
   // exception.
-  static void ThrowNew(JNIEnv* env, Status s) {
-    if (s.ok()) {
+  static void ThrowNew(JNIEnv* env, const char* className,
+                       const char* message) {
+    if (!className) {
       return;
     }
-    jstring msg = env->NewStringUTF(s.ToString().c_str());
-    // get the constructor id of org.rocksdb.RocksDBException
-    static jmethodID mid = env->GetMethodID(
-        getJClass(env), "<init>", "(Ljava/lang/String;)V");
+
+    jstring jMsg = env->NewStringUTF(message);
+
+    // get the java exception class
+    jclass exceptionClazz = getJClass(env, className);
+
+    // get the constructor id of the exception
+    static jmethodID mid = env->GetMethodID(exceptionClazz, "<init>",
+                                            "(Ljava/lang/String;)V");
     assert(mid != nullptr);
 
-    env->Throw((jthrowable)env->NewObject(getJClass(env), mid, msg));
+    env->Throw((jthrowable) env->NewObject(exceptionClazz, mid, jMsg));
   }
 
-  // Create and throw a java RocksDBException wrapped around the given
-  // java Throwable.
-  static void ThrowNew(JNIEnv* env, const char* msg, jthrowable& cause) {
-    jstring jMsg = env->NewStringUTF(msg);
+  // Create and throw a java exception wrapped around the given
+  // java Throwable as its cause.
+  //
+  // In case className is NULL, then this function will not throw any
+  // exception.
+  static void ThrowNew(JNIEnv* env, const char* className, const char* message,
+                       jthrowable& cause) {
+    if (!className) {
+      return;
+    }
+
+    jstring jMsg = env->NewStringUTF(message);
+
+    // get the java exception class
+    jclass exceptionClazz = getJClass(env, className);
 
     // get the constructor id of org.rocksdb.RocksDBException
     static jmethodID mid = env->GetMethodID(
-        getJClass(env), "<init>",
-        "(Ljava/lang/String;Ljava/lang/Throwable;)V");
+        exceptionClazz, "<init>", "(Ljava/lang/String;Ljava/lang/Throwable;)V");
     assert(mid != nullptr);
 
-    env->Throw((jthrowable) env->NewObject(getJClass(env), mid, jMsg, cause));
+    env->Throw((jthrowable) env->NewObject(exceptionClazz, mid, jMsg, cause));
   }
 };
 
