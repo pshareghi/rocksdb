@@ -127,7 +127,10 @@ public abstract class ByteArrayDeque extends AbstractDeque<byte[]> {
     return isEmpty0(nativeHandle_);
   }
   
-  @Override public abstract Iterator<byte[]> iterator();
+  @Override public Iterator<byte[]> iterator() {
+    return new Itr();
+  }
+  
 
   @Override public Object[] toArray() {
     assert(isInitialized());
@@ -211,4 +214,28 @@ public abstract class ByteArrayDeque extends AbstractDeque<byte[]> {
   private native String toString0(long handle, boolean hex);
 
   private native void disposeInternal(long handle);
+
+  
+  private class Itr implements Iterator<byte[]> {
+    
+    public boolean hasNext() {
+      assert (isInitialized());
+      return itrhasNext0(nativeHandle_);
+    }
+    
+    public byte[] next() {
+      assert (isInitialized());
+      return itrNext0(nativeHandle_);
+    }
+    
+    public void remove() {
+      assert (isInitialized());
+      itrRemove0(nativeHandle_);
+    }
+    
+    private native boolean itrhasNext0(long handle);
+    private native byte[] itrNext0(long handle);
+    private native void itrRemove0(long handle);
+    
+  }
 }
