@@ -60,6 +60,13 @@ jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_removeFirst0(JNIEnv* env,
                                                                 jlong handle) {
   const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
 
+  if (deque->empty()) {
+    rocksdb::ExceptionJni::ThrowNew(
+        env, "java/util/NoSuchElementException",
+        "Cannot invoke removeFirst on an empty deque!");
+    return NULL;
+  }
+
   const std::string& str = deque->front();
   jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
 
@@ -77,6 +84,13 @@ jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_removeLast0(JNIEnv* env,
                                                                jobject jobj,
                                                                jlong handle) {
   const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
+
+  if (deque->empty()) {
+    rocksdb::ExceptionJni::ThrowNew(
+        env, "java/util/NoSuchElementException",
+        "Cannot invoke removeLast on an empty deque!");
+    return NULL;
+  }
 
   std::string& str(deque->back());
   jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
@@ -136,6 +150,13 @@ jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_getFirst0(JNIEnv* env,
                                                              jlong handle) {
   const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
 
+  if (deque->empty()) {
+     rocksdb::ExceptionJni::ThrowNew(
+         env, "java/util/NoSuchElementException",
+         "Cannot invoke getFirst on an empty deque!");
+     return NULL;
+   }
+
   const std::string& str = deque->front();
   jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
 
@@ -152,6 +173,13 @@ jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_getLast0(JNIEnv* env,
                                                             jlong handle) {
   const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
 
+  if (deque->empty()) {
+     rocksdb::ExceptionJni::ThrowNew(
+         env, "java/util/NoSuchElementException",
+         "Cannot invoke getLast on an empty deque!");
+     return NULL;
+   }
+
   const std::string& str = deque->back();
   jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
 
@@ -164,13 +192,13 @@ jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_getLast0(JNIEnv* env,
  * Signature: (J)[B
  */
 jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_peekFirst0(JNIEnv* env,
-                                                            jobject jobj,
-                                                            jlong handle) {
+                                                              jobject jobj,
+                                                              jlong handle) {
   const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
 
   if (deque->empty()) {
-      return NULL;
-    }
+    return NULL;
+  }
 
   const std::string& str = deque->front();
   jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
@@ -184,18 +212,17 @@ jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_peekFirst0(JNIEnv* env,
  * Signature: (J)[B
  */
 jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_peekLast0(JNIEnv* env,
-                                                            jobject jobj,
-                                                            jlong handle) {
+                                                             jobject jobj,
+                                                             jlong handle) {
   const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
 
   if (deque->empty()) {
-      return NULL;
-    }
+    return NULL;
+  }
 
   const std::string& str = deque->back();
   jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
 
   return elem;
 }
-
 
