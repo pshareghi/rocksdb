@@ -134,6 +134,7 @@ public abstract class ByteArrayDeque extends AbstractDeque<byte[]> {
     return toArray0(nativeHandle_);
   }
 
+  @SuppressWarnings("unchecked")
   @Override public <T> T[] toArray(T[] a) {
     int size = size();
     if (a.length < size) {
