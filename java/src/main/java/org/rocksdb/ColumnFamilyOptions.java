@@ -141,6 +141,14 @@ public class ColumnFamilyOptions extends RocksObject
     setMergeOperator(nativeHandle_, mergeOperator.newMergeOperatorHandle());
     return this;
   }
+  
+  @Override
+  public ColumnFamilyOptions setMergeOpr(AbstractMergeOpr mergeOpr) {
+    assert (isInitialized());
+    setMergeOprHandle(nativeHandle_, mergeOpr.nativeHandle_);
+    mergeOpr_ = mergeOpr;
+    return this;
+  }
 
   @Override
   public ColumnFamilyOptions setWriteBufferSize(long writeBufferSize)
@@ -599,6 +607,7 @@ public class ColumnFamilyOptions extends RocksObject
       long handle, String name);
   private native void setMergeOperator(
       long handle, long mergeOperatorHandle);
+  private native void setMergeOprHandle(long optHandle, long mergeOprHandle);
   private native void setWriteBufferSize(long handle, long writeBufferSize)
       throws RocksDBException;
   private native long writeBufferSize(long handle);
@@ -706,4 +715,5 @@ public class ColumnFamilyOptions extends RocksObject
   MemTableConfig memTableConfig_;
   TableFormatConfig tableFormatConfig_;
   AbstractComparator comparator_;
+  AbstractMergeOpr mergeOpr_;
 }

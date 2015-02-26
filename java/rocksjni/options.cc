@@ -18,6 +18,7 @@
 #include "include/org_rocksdb_ReadOptions.h"
 #include "include/org_rocksdb_ComparatorOptions.h"
 #include "include/org_rocksdb_FlushOptions.h"
+#include "include/org_rocksdb_MergeOprOptions.h"
 
 #include "rocksjni/comparatorjnicallback.h"
 #include "rocksjni/portal.h"
@@ -175,6 +176,21 @@ void Java_org_rocksdb_Options_setMergeOperator(
   reinterpret_cast<rocksdb::Options*>(jhandle)->merge_operator =
     *(reinterpret_cast<std::shared_ptr<rocksdb::MergeOperator>*>
       (mergeOperatorHandle));
+}
+
+/*
+ * Class:     org_rocksdb_Options
+ * Method:    setMergeOprHandle
+ * Signature: (JJ)V
+ */
+void JNICALL Java_org_rocksdb_Options_setMergeOprHandle(
+    JNIEnv* env, jobject jobj, jlong jopt_handle, jlong jmergeopr_handle) {
+  rocksdb::MergeOperator* ptr =
+      reinterpret_cast<rocksdb::MergeOperator*>(jmergeopr_handle);
+  std::shared_ptr<rocksdb::MergeOperator> merge_opr_shared =
+      std::shared_ptr<rocksdb::MergeOperator>(ptr);
+  reinterpret_cast<rocksdb::Options*>(jopt_handle)->merge_operator =
+      merge_opr_shared;
 }
 
 /*
@@ -1915,6 +1931,21 @@ void Java_org_rocksdb_ColumnFamilyOptions_setMergeOperator(
   reinterpret_cast<rocksdb::ColumnFamilyOptions*>(jhandle)->merge_operator =
     *(reinterpret_cast<std::shared_ptr<rocksdb::MergeOperator>*>
       (mergeOperatorHandle));
+}
+
+/*
+ * Class:     org_rocksdb_ColumnFamilyOptions
+ * Method:    setMergeOprHandle
+ * Signature: (JJ)V
+ */
+void JNICALL Java_org_rocksdb_ColumnFamilyOptions_setMergeOprHandle
+    (JNIEnv* env, jobject jobj, jlong jopt_handle, jlong jmergeopr_handle) {
+  rocksdb::MergeOperator* ptr =
+        reinterpret_cast<rocksdb::MergeOperator*>(jmergeopr_handle);
+    std::shared_ptr<rocksdb::MergeOperator> merge_opr_shared =
+        std::shared_ptr<rocksdb::MergeOperator>(ptr);
+    reinterpret_cast<rocksdb::Options*>(jopt_handle)->merge_operator =
+        merge_opr_shared;
 }
 
 /*
@@ -3761,6 +3792,53 @@ jlong Java_org_rocksdb_ReadOptions_snapshot(
   auto& snapshot =
       reinterpret_cast<rocksdb::ReadOptions*>(jhandle)->snapshot;
   return reinterpret_cast<jlong>(snapshot);
+}
+
+/////////////////////////////////////////////////////////////////////
+// rocksdb::MergeOprOptions
+
+/*
+ * Class:     org_rocksdb_MergeOprOptions
+ * Method:    newMergeOprOptions
+ * Signature: ()V
+ */
+void Java_org_rocksdb_MergeOprOptions_newMergeOprOptions(
+    JNIEnv* env, jobject jobj) {
+  auto mergeopr_opt = new rocksdb::MergeOprJniCallbackOptions();
+  rocksdb::MergeOprOptionsJni::setHandle(env, jobj, mergeopr_opt);
+}
+
+/*
+ * Class:     org_rocksdb_MergeOprOptions
+ * Method:    useAdaptiveMutex
+ * Signature: (J)Z
+ */
+jboolean Java_org_rocksdb_MergeOprOptions_useAdaptiveMutex(
+    JNIEnv * env, jobject jobj, jlong jhandle) {
+  return reinterpret_cast<rocksdb::MergeOprJniCallbackOptions*>(jhandle)
+    ->use_adaptive_mutex;
+}
+
+/*
+ * Class:     org_rocksdb_MergeOprOptions
+ * Method:    setUseAdaptiveMutex
+ * Signature: (JZ)V
+ */
+void Java_org_rocksdb_MergeOprOptions_setUseAdaptiveMutex(
+    JNIEnv * env, jobject jobj, jlong jhandle, jboolean juse_adaptive_mutex) {
+  reinterpret_cast<rocksdb::MergeOprJniCallbackOptions*>(jhandle)
+    ->use_adaptive_mutex = static_cast<bool>(juse_adaptive_mutex);
+}
+
+/*
+ * Class:     org_rocksdb_MergeOprOptions
+ * Method:    disposeInternal
+ * Signature: (J)V
+ */
+void Java_org_rocksdb_MergeOprOptions_disposeInternal(
+    JNIEnv * env, jobject jobj, jlong jhandle) {
+  delete reinterpret_cast<rocksdb::MergeOprJniCallbackOptions*>(jhandle);
+  rocksdb::MergeOprOptionsJni::setHandle(env, jobj, nullptr);
 }
 
 /////////////////////////////////////////////////////////////////////

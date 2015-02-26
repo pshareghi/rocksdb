@@ -186,6 +186,14 @@ public class Options extends RocksObject
     setMergeOperator(nativeHandle_, mergeOperator.newMergeOperatorHandle());
     return this;
   }
+  
+  @Override
+  public Options setMergeOpr(AbstractMergeOpr mergeOpr) {
+    assert (isInitialized());
+    setMergeOprHandle(nativeHandle_, mergeOpr.nativeHandle_);
+    mergeOpr_ = mergeOpr;
+    return this;
+  }
 
   @Override
   public Options setWriteBufferSize(long writeBufferSize)
@@ -1145,6 +1153,7 @@ public class Options extends RocksObject
       long handle, String name);
   private native void setMergeOperator(
       long handle, long mergeOperatorHandle);
+  private native void setMergeOprHandle(long optHandle, long mergeOprHandle);
   private native void setWriteBufferSize(long handle, long writeBufferSize)
       throws RocksDBException;
   private native long writeBufferSize(long handle);
@@ -1254,4 +1263,5 @@ public class Options extends RocksObject
   TableFormatConfig tableFormatConfig_;
   RateLimiterConfig rateLimiterConfig_;
   AbstractComparator comparator_;
+  AbstractMergeOpr mergeOpr_;
 }
