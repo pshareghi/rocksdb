@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 
+#include "include/org_rocksdb_MergeOpr.h"
 #include "include/org_rocksdb_StringAppendOperator.h"
 #include "rocksdb/db.h"
 #include "rocksdb/memtablerep.h"

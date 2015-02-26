@@ -469,10 +469,43 @@ class AbstractMergeOprJni : public RocksDBNativeClass<
 
   // Get the java method `fullMerge` of org.rocksdb.AbstractMergeOpr.
   static jmethodID getFullMergeMethodId(JNIEnv* env) {
+    jclass cls = getJClass(env);
+    assert(cls != nullptr);
+    printf("\nclass %lu", (long) cls);
+
+    jmethodID constructor = env->GetMethodID(cls, "<init>", "()V");
+    assert(constructor != nullptr);
+    printf("\nconstructor %lu", (long) constructor);
+
+    jobject strObj = env->NewObject(cls, constructor);
+    assert(strObj != nullptr);
+    printf("\nobject %lu", (long) strObj);
+
+
+    jmethodID midGetClass = env->GetMethodID(cls, "getClass", "()Ljava/lang/Class;");
+    assert(midGetClass != nullptr);
+//    jobject clsObj = env->CallObjectMethod(strObj, midGetClass);
+//    jclass jCls = env->GetObjectClass(clsObj);
+//    jmethodID midGetFields = env->GetMethodID(jCls, "getMethods", "()[Ljava/lang/reflect/Method;");
+//    jobjectArray jobjArray = (jobjectArray)env->CallObjectMethod(clsObj, midGetFields);
+//    jsize len = env->GetArrayLength(jobjArray);
+//    jsize i;
+//
+//    for (i = 0 ; i < len ; i++) {
+//        jobject _strMethod = env->GetObjectArrayElement(jobjArray , i) ;
+//        jclass _methodClazz = env->GetObjectClass(_strMethod) ;
+//        jmethodID mid = env->GetMethodID(_methodClazz , "getName" , "()Ljava/lang/String;") ;
+//        jstring _name = (jstring)env->CallObjectMethod(_strMethod , mid ) ;
+//        const char *str = env->GetStringUTFChars(_name, 0);
+//
+//        printf("\n%s", str);
+//        env->ReleaseStringUTFChars(_name, str);
+//    }
+
     static jmethodID mid = env->GetMethodID(
         getJClass(env), "fullMerge",
         "(Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;"
-        "Ljava/util/Deque;Lorg/rocksdb/AbstractSlice;)Z");
+        "Lorg/rocksdb/AbstractSlice;Ljava/util/Deque;)[B");
     assert(mid != nullptr);
     return mid;
   }
@@ -482,7 +515,7 @@ class AbstractMergeOprJni : public RocksDBNativeClass<
     static jmethodID mid = env->GetMethodID(
         getJClass(env), "partialMerge",
         "(Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;"
-        "Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;)Z");
+        "Lorg/rocksdb/AbstractSlice;)[B");
     assert(mid != nullptr);
     return mid;
   }
@@ -491,8 +524,7 @@ class AbstractMergeOprJni : public RocksDBNativeClass<
   static jmethodID getPartialMergeMultiMethodId(JNIEnv* env) {
     static jmethodID mid = env->GetMethodID(
         getJClass(env), "partialMergeMulti",
-        "(Lorg/rocksdb/AbstractSlice;Ljava/util/Deque;"
-        "Lorg/rocksdb/AbstractSlice;)Z");
+        "(Lorg/rocksdb/AbstractSlice;Ljava/util/Deque;)[B");
     assert(mid != nullptr);
     return mid;
   }
@@ -502,7 +534,7 @@ class AbstractMergeOprJni : public RocksDBNativeClass<
       static jmethodID mid = env->GetMethodID(
           getJClass(env), "merge",
           "(Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;"
-          "Lorg/rocksdb/AbstractSlice;Lorg/rocksdb/AbstractSlice;)Z");
+          "Lorg/rocksdb/AbstractSlice;)[B");
       assert(mid != nullptr);
       return mid;
     }
