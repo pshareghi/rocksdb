@@ -15,7 +15,7 @@ import java.util.Iterator;
  * 
  * @see org.rocksdb.AbstractDeque
  */
-public abstract class ByteArrayDeque extends AbstractDeque<byte[]> {
+public class ByteArrayDeque extends AbstractDeque<byte[]> {
   
   // Used by ByteArrayDequeJni
   public ByteArrayDeque() {
@@ -128,7 +128,7 @@ public abstract class ByteArrayDeque extends AbstractDeque<byte[]> {
   }
   
   @Override public Iterator<byte[]> iterator() {
-    return new Itr();
+    return new Iter();
   }
   
 
@@ -155,7 +155,9 @@ public abstract class ByteArrayDeque extends AbstractDeque<byte[]> {
     return a;
   }
 
-  @Override public abstract Iterator<byte[]> descendingIterator();
+  @Override public Iterator<byte[]> descendingIterator() {
+    throw new UnsupportedOperationException();
+  }
   
   /**
    * Creates a string representation of the data
@@ -216,26 +218,33 @@ public abstract class ByteArrayDeque extends AbstractDeque<byte[]> {
   private native void disposeInternal(long handle);
 
   
-  private class Itr implements Iterator<byte[]> {
+  private class Iter implements Iterator<byte[]> {
+    
+    long nativeIterHandle_;
+    
+    public Iter() {
+      assert (isInitialized());
+      nativeIterHandle_ = createNewIterator0(nativeHandle_);
+    }
     
     public boolean hasNext() {
       assert (isInitialized());
-      return itrhasNext0(nativeHandle_);
+      return itrhasNext0(nativeIterHandle_);
     }
     
     public byte[] next() {
       assert (isInitialized());
-      return itrNext0(nativeHandle_);
+      return itrNext0(nativeIterHandle_);
     }
     
     public void remove() {
       assert (isInitialized());
-      itrRemove0(nativeHandle_);
+      itrRemove0(nativeIterHandle_);
     }
     
+    private native long createNewIterator0(long dequeHandle);
     private native boolean itrhasNext0(long handle);
     private native byte[] itrNext0(long handle);
     private native void itrRemove0(long handle);
-    
   }
 }
