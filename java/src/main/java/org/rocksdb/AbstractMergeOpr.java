@@ -66,6 +66,16 @@ public abstract class AbstractMergeOpr<T extends AbstractSlice> extends
   public byte[] partialMergeMulti(T key, Deque<T> operandList) {
     return null;
   }
+  
+  /**
+   * Only available in the subclasses {@link org.rocksdb.AssociativeMergeOpr}
+   * and {@link org.rocksdb.DirectAssociativeMergeOpr}.
+   */
+  protected byte[] merge(T key,
+      T existingValue,
+      T value) {
+    return null;
+  }
 
   /**
    * Deletes underlying C++ comparator pointer.

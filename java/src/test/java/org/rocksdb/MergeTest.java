@@ -94,7 +94,7 @@ public class MergeTest {
       return this.getClass().getName();
     }
     
-    public byte[] Merge(Slice key,
+    public byte[] merge(Slice key,
         Slice existingValue,
         Slice value) {
       String str1 = new String(existingValue.data());

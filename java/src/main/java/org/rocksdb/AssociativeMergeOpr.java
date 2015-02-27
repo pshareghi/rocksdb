@@ -66,7 +66,8 @@ public abstract class AssociativeMergeOpr extends MergeOpr {
     return null;
   }
   
-  public abstract byte[] Merge(Slice key,
+  @Override
+  public abstract byte[] merge(Slice key,
       Slice existingValue,
       Slice value);
   

@@ -68,7 +68,7 @@ public abstract class DirectAssociativeMergeOpr extends DirectMergeOpr {
     return null;
   }
 
-  public abstract byte[] Merge(Slice key,
+  public abstract byte[] merge(Slice key,
       Slice existingValue,
       Slice value);
   
