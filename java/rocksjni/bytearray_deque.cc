@@ -13,6 +13,7 @@
 #include <string>
 
 #include "include/org_rocksdb_ByteArrayDeque.h"
+#include "include/org_rocksdb_ByteArrayDeque_Iter.h"
 #include "portal.h"
 
 /*
@@ -430,3 +431,50 @@ void JNICALL Java_org_rocksdb_ByteArrayDeque_disposeInternal(JNIEnv* env,
                                                              jlong handle) {
   delete reinterpret_cast<std::deque<std::string> *>(handle);
 }
+
+////////////////////////////// Iterator implementation
+/*
+ * Class:     org_rocksdb_ByteArrayDeque_Iter
+ * Method:    itrhasNext0
+ * Signature: (JI)Z
+ */
+jboolean JNICALL Java_org_rocksdb_ByteArrayDeque_00024Iter_itrhasNext0
+(JNIEnv* env, jobject jobj, jlong handle, jint idx) {
+  const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
+  auto iter = deque->begin() + idx;
+  return (iter >= deque->end());
+}
+
+/*
+ * Class:     org_rocksdb_ByteArrayDeque_Iter
+ * Method:    itrNext0
+ * Signature: (JI)[B
+ */
+jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_00024Iter_itrNext0
+(JNIEnv* env, jobject jobj, jlong handle, jint idx) {
+  const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
+  auto iter = deque->begin() + idx;
+  if (iter >= deque->end()) {
+    rocksdb::ExceptionJni::ThrowNew(
+            env, "java/util/NoSuchElementException",
+            "Cannot invoke iterator.next() past the last element!");
+        return NULL;
+  }
+
+  jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, *iter);
+  return elem;
+}
+
+/*
+ * Class:     org_rocksdb_ByteArrayDeque_Iter
+ * Method:    itrRemove0
+ * Signature: (JI)V
+ */
+void JNICALL Java_org_rocksdb_ByteArrayDeque_00024Iter_itrRemove0
+(JNIEnv* env, jobject jobj, jlong handle, jint idx) {
+  const auto deque = reinterpret_cast<std::deque<std::string> *>(handle);
+  auto iter = deque->begin() + idx;
+  deque->erase(iter);
+}
+
+

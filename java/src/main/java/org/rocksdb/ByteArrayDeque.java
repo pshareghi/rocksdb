@@ -173,9 +173,9 @@ public class ByteArrayDeque extends AbstractDeque<byte[]> {
   }
 
   /**
-   * Deletes underlying C++ slice pointer.
+   * Deletes underlying C++ deque jni pointer.
    * Note that this function should be called only after all
-   * RocksDB instances referencing the slice are closed.
+   * RocksDB instances referencing the deque jni are closed.
    * Otherwise an undefined behavior will occur.
    */
   @Override
@@ -206,12 +206,8 @@ public class ByteArrayDeque extends AbstractDeque<byte[]> {
   private native int size0(long handle);
   private native boolean isEmpty0(long handle);
   
-  /////////////////   iter goes here
-  
   private native Object[] toArray0(long handle);
   private native Object[] toArray1(long handle, Object[] a);
-  
-  /////////////////  desc iter goes here
   
   private native String toString0(long handle, boolean hex);
 
@@ -220,31 +216,45 @@ public class ByteArrayDeque extends AbstractDeque<byte[]> {
   
   private class Iter implements Iterator<byte[]> {
     
-    long nativeIterHandle_;
-    
     public Iter() {
       assert (isInitialized());
-      nativeIterHandle_ = createNewIterator0(nativeHandle_);
+      this.idx_ = -1;
+      this.justRemovedElem_ = false;
     }
     
     public boolean hasNext() {
       assert (isInitialized());
-      return itrhasNext0(nativeIterHandle_);
+      return itrhasNext0(nativeHandle_, idx_ + 1);
     }
     
     public byte[] next() {
       assert (isInitialized());
-      return itrNext0(nativeIterHandle_);
+      justRemovedElem_ = false;
+      return itrNext0(nativeHandle_, ++idx_);
     }
     
     public void remove() {
       assert (isInitialized());
-      itrRemove0(nativeIterHandle_);
+      
+      if (justRemovedElem_) { // Client should have called next() first
+        throw new IllegalStateException(
+            "Cannot invoke Iterator.remove() consecutively!");
+      }
+      
+      // We need to decrement idx_ because in java one has to call
+      // next() after calling remove() to obtain the next elem.
+      // Note that next() increments idx_. To avoid skipping
+      // the element that is right after the one we just removed,
+      // we need to decrement idx_ here.
+      itrRemove0(nativeHandle_, idx_--);
+      justRemovedElem_ = true;
     }
     
-    private native long createNewIterator0(long dequeHandle);
-    private native boolean itrhasNext0(long handle);
-    private native byte[] itrNext0(long handle);
-    private native void itrRemove0(long handle);
+    private int idx_;
+    private boolean justRemovedElem_;
+    
+    private native boolean itrhasNext0(long handle, int idx);
+    private native byte[] itrNext0(long handle, int idx);
+    private native void itrRemove0(long handle, int idx);
   }
 }
