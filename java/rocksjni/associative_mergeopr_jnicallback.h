@@ -17,10 +17,11 @@
 #include "port/port.h"
 #include "rocksdb/merge_operator.h"
 #include "rocksdb/slice.h"
+#include "rocksjni/mergeopr_jnicallback.h"
 
 namespace rocksdb {
 
-struct AssociativeMergeOprJniCallbackOptions {
+/*struct AssociativeMergeOprJniCallbackOptions {
   // Use adaptive mutex, which spins in the user space before resorting
   // to kernel. This could reduce context switch when the mutex is not
   // heavily contended. However, if the mutex is hot, we could end up
@@ -31,7 +32,7 @@ struct AssociativeMergeOprJniCallbackOptions {
   AssociativeMergeOprJniCallbackOptions() :
       use_adaptive_mutex(false) {
   }
-};
+};*/
 
 /**
  * This class acts as a bridge between C++
@@ -52,7 +53,7 @@ class BaseAssociativeMergeOprJniCallback : public AssociativeMergeOperator {
  public:
   BaseAssociativeMergeOprJniCallback(
       JNIEnv* env, jobject jAssociativeMergeOpr,
-      const AssociativeMergeOprJniCallbackOptions* mopt);
+      const MergeOprJniCallbackOptions* mopt);
   virtual ~BaseAssociativeMergeOprJniCallback();
   virtual const char* Name() const;
   virtual bool Merge(const Slice& key, const Slice* existing_value,
@@ -80,7 +81,7 @@ class AssoicativeMergeOprJniCallback :
  public:
   AssoicativeMergeOprJniCallback(
       JNIEnv* env, jobject jMergeOpr,
-      const AssociativeMergeOprJniCallbackOptions* mopt);
+      const MergeOprJniCallbackOptions* mopt);
   ~AssoicativeMergeOprJniCallback();
 };
 
@@ -89,7 +90,7 @@ class DirectAssociativeMergeOprJniCallback :
  public:
   DirectAssociativeMergeOprJniCallback(
       JNIEnv* env, jobject jDirectAssociativeMergeOpr,
-      const AssociativeMergeOprJniCallbackOptions* mopt);
+      const MergeOprJniCallbackOptions* mopt);
   ~DirectAssociativeMergeOprJniCallback();
 };
 }  // namespace rocksdb

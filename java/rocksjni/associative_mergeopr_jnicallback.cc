@@ -6,13 +6,14 @@
 // This file implements the callback "bridge" between Java and C++ for
 // rocksdb::Comparator.
 
+#include "rocksjni/mergeopr_jnicallback.h"
 #include "rocksjni/associative_mergeopr_jnicallback.h"
 #include "rocksjni/portal.h"
 
 namespace rocksdb {
 BaseAssociativeMergeOprJniCallback::BaseAssociativeMergeOprJniCallback(
     JNIEnv* env, jobject jAssociativeMergeOpr,
-    const AssociativeMergeOprJniCallbackOptions* mopt) :
+    const MergeOprJniCallbackOptions* mopt) :
     mtx_merge(new port::Mutex(mopt->use_adaptive_mutex)) {
   // Note: merge method may be accessed by multiple threads,
   // so we ref the jvm not the env
@@ -120,7 +121,7 @@ BaseAssociativeMergeOprJniCallback::~BaseAssociativeMergeOprJniCallback() {
 
 AssoicativeMergeOprJniCallback::AssoicativeMergeOprJniCallback(
     JNIEnv* env, jobject jAssociativeMergeOpr,
-    const AssociativeMergeOprJniCallbackOptions* mopt) :
+    const MergeOprJniCallbackOptions* mopt) :
     BaseAssociativeMergeOprJniCallback(env, jAssociativeMergeOpr, mopt) {
   m_jKeySlice = env->NewGlobalRef(SliceJni::construct0(env));
   m_jExistingValueSlice = env->NewGlobalRef(SliceJni::construct0(env));
@@ -136,7 +137,7 @@ AssoicativeMergeOprJniCallback::~AssoicativeMergeOprJniCallback() {
 
 DirectAssociativeMergeOprJniCallback::DirectAssociativeMergeOprJniCallback(
     JNIEnv* env, jobject jAssociativeMergeOpr,
-    const AssociativeMergeOprJniCallbackOptions* mopt) :
+    const MergeOprJniCallbackOptions* mopt) :
     BaseAssociativeMergeOprJniCallback(env, jAssociativeMergeOpr, mopt) {
   m_jKeySlice = env->NewGlobalRef(DirectSliceJni::construct0(env));
   m_jExistingValueSlice = env->NewGlobalRef(DirectSliceJni::construct0(env));

@@ -70,21 +70,6 @@ public abstract class AssociativeMergeOpr extends MergeOpr {
   public abstract byte[] merge(Slice key,
       Slice existingValue,
       Slice value);
-  
-  /**
-   * Deletes underlying C++ comparator pointer.
-   *
-   * Note that this function should be called only after all RocksDB instances
-   * referencing the merge operator are closed. Otherwise an undefined behavior
-   * will occur.
-   */
-  @Override
-  protected void disposeInternal() {
-    assert (isInitialized());
-    disposeInternal(nativeHandle_);
-  }
-
-  private native void disposeInternal(long handle);
 
   private native void createNewAssociativeMergeOpr0(
       final long mergeOprOptionsHandle);

@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 
+#include "include/org_rocksdb_AssociativeMergeOpr.h"
 #include "include/org_rocksdb_MergeOpr.h"
 #include "include/org_rocksdb_StringAppendOperator.h"
 #include "rocksdb/db.h"
@@ -61,4 +62,18 @@ void Java_org_rocksdb_MergeOpr_createNewMergeOpr0
   const rocksdb::MergeOprJniCallback* m =
       new rocksdb::MergeOprJniCallback(env, jobj, mopt);
   rocksdb::AbstractMergeOprJni::setHandle(env, jobj, m);
+}
+
+/*
+ * Class:     org_rocksdb_AssociativeMergeOpr
+ * Method:    createNewAssociativeMergeOpr0
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_org_rocksdb_AssociativeMergeOpr_createNewAssociativeMergeOpr0
+  (JNIEnv* env, jobject jobj, jlong mopt_handle) {
+  const rocksdb::MergeOprJniCallbackOptions* mopt =
+      reinterpret_cast<rocksdb::MergeOprJniCallbackOptions*>(mopt_handle);
+  const rocksdb::AssoicativeMergeOprJniCallback* m = new rocksdb::AssoicativeMergeOprJniCallback(
+      env, jobj, mopt);
+  rocksdb::AbstractAssociativeMergeOprJni::setHandle(env, jobj, m);
 }
