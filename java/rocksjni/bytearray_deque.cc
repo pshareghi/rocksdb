@@ -93,7 +93,7 @@ jbyteArray JNICALL Java_org_rocksdb_ByteArrayDeque_removeLast0(JNIEnv* env,
     return NULL;
   }
 
-  std::string& str(deque->back());
+  std::string& str = deque->back();
   jbyteArray elem = rocksdb::JniUtil::stdStringToByteArray(env, str);
 
   deque->pop_back();
