@@ -36,6 +36,7 @@ NATIVE_JAVA_CLASSES = org.rocksdb.AbstractComparator\
 	org.rocksdb.RocksIterator\
 	org.rocksdb.SkipListMemTableConfig\
 	org.rocksdb.Slice\
+	org.rocksdb.SliceDeque\
 	org.rocksdb.Statistics\
 	org.rocksdb.TransactionLogIterator\
 	org.rocksdb.TtlDB\

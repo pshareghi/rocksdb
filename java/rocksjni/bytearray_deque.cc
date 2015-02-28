@@ -4,7 +4,7 @@
 // of patent rights can be found in the PATENTS file in the same directory.
 //
 // This file implements the "bridge" between Java and C++ for
-// std::.
+// std::deque<string>.
 
 #include <jni.h>
 
