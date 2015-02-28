@@ -22,6 +22,7 @@
 #include "rocksdb/utilities/backupable_db.h"
 #include "rocksdb/utilities/write_batch_with_index.h"
 #include "rocksjni/comparatorjnicallback.h"
+#include "rocksjni/associative_mergeopr_jnicallback.h"
 #include "rocksjni/mergeopr_jnicallback.h"
 #include "rocksjni/writebatchhandlerjnicallback.h"
 
@@ -495,8 +496,27 @@ class AbstractMergeOprJni : public RocksDBNativeClass<
     assert(mid != nullptr);
     return mid;
   }
+};
 
-  // Get the java method `merge` of org.rocksdb.AssociativeMergeOpr or DirectAssociativeMergeOpr.
+// The portal class for org.rocksdb.AbstractMergeOpr but for dealing with
+// AssociativeMergeOpr and DirectAssociativeMergeOpr
+class AbstractAssociativeMergeOprJni : public RocksDBNativeClass<
+    const rocksdb::BaseAssociativeMergeOprJniCallback*, AbstractMergeOprJni> {
+ public:
+  static jclass getJClass(JNIEnv* env) {
+    return RocksDBNativeClass::getJClass(env, "org/rocksdb/AbstractMergeOpr");
+  }
+
+  // Get the java method `name` of org.rocksdb.AbstractMergeOpr.
+  static jmethodID getNameMethodId(JNIEnv* env) {
+    static jmethodID mid = env->GetMethodID(getJClass(env), "name",
+                                            "()Ljava/lang/String;");
+    assert(mid != nullptr);
+    return mid;
+  }
+
+  // Get the java method `merge` of
+  // org.rocksdb.AssociativeMergeOpr or DirectAssociativeMergeOpr.
     static jmethodID getMergeMethodId(JNIEnv* env) {
       static jmethodID mid = env->GetMethodID(
           getJClass(env), "merge",

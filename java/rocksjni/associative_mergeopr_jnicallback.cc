@@ -25,12 +25,13 @@ BaseAssociativeMergeOprJniCallback::BaseAssociativeMergeOprJniCallback(
 
   // Note: The name of an AssociativeMergeOpr will not change during it's
   // lifetime, so we cache it in a global var
-  jmethodID jNameMethodId = AbstractMergeOprJni::getNameMethodId(env);
-  jstring jsName = (jstring) env->CallObjectMethod(m_jAssociativeMergeOpr,
-                                                   jNameMethodId);
+  jmethodID jNameMethodId = AbstractAssociativeMergeOprJni::getNameMethodId(
+      env);
+  jstring jsName = (jstring)
+      env->CallObjectMethod(m_jAssociativeMergeOpr, jNameMethodId);
   m_name = JniUtil::copyString(env, jsName);  // also releases jsName
 
-  m_jMergeMethodId = AbstractMergeOprJni::getMergeMethodId(env);
+  m_jMergeMethodId = AbstractAssociativeMergeOprJni::getMergeMethodId(env);
 }
 
 /**
