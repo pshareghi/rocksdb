@@ -104,7 +104,7 @@ public class MergeTest {
   }
   
   @Test
-  public void mergeOpr()
+  public void mergeOpr2()
       throws InterruptedException, RocksDBException {
     RocksDB db = null;
     Options opt = null;
@@ -123,6 +123,7 @@ public class MergeTest {
 
       byte[] value = db.get("key".getBytes());
       String strValue = new String(value);
+      System.out.println("string \"" + strValue + "\"");
       assertThat(strValue).isEqualTo("aa:bb");
     } finally {
       if (db != null) {
@@ -133,6 +134,114 @@ public class MergeTest {
       }
     }
   }
+  @Test
+  public void mergeOpr3()
+      throws InterruptedException, RocksDBException {
+    RocksDB db = null;
+    Options opt = null;
+    try {
+      String db_path_string =
+          dbFolder.getRoot().getAbsolutePath();
+      opt = new Options();
+      opt.setCreateIfMissing(true);
+      opt.setMergeOpr(new AppendMerge(new MergeOprOptions()));
+
+      db = RocksDB.open(opt, db_path_string);
+      // writing aa under key
+      db.put("key".getBytes(), "aa".getBytes());
+      // merge bb under key
+      db.merge("key".getBytes(), "bb".getBytes());
+      // merge cc under key
+      db.merge("key".getBytes(), "cc".getBytes());
+
+      byte[] value = db.get("key".getBytes());
+      String strValue = new String(value);
+      System.out.println("string \"" + strValue + "\"");
+      assertThat(strValue).isEqualTo("aa:bb:cc");
+    } finally {
+      if (db != null) {
+        db.close();
+      }
+      if (opt != null) {
+        opt.dispose();
+      }
+    }
+  }
+  
+  @Test
+  public void mergeOpr4()
+      throws InterruptedException, RocksDBException {
+    RocksDB db = null;
+    Options opt = null;
+    try {
+      String db_path_string =
+          dbFolder.getRoot().getAbsolutePath();
+      opt = new Options();
+      opt.setCreateIfMissing(true);
+      opt.setMergeOpr(new AppendMerge(new MergeOprOptions()));
+
+      db = RocksDB.open(opt, db_path_string);
+      // writing aa under key
+      db.put("key".getBytes(), "aa".getBytes());
+      // merge bb under key
+      db.merge("key".getBytes(), "bb".getBytes());
+      // merge cc under key
+      db.merge("key".getBytes(), "cc".getBytes());
+      // merge dd under key
+      db.merge("key".getBytes(), "dd".getBytes());
+
+      byte[] value = db.get("key".getBytes());
+      String strValue = new String(value);
+      System.out.println("string \"" + strValue + "\"");
+      assertThat(strValue).isEqualTo("aa:bb:cc:dd");
+    } finally {
+      if (db != null) {
+        db.close();
+      }
+      if (opt != null) {
+        opt.dispose();
+      }
+    }
+  }
+  
+  @Test
+  public void mergeOpr5()
+      throws InterruptedException, RocksDBException {
+    RocksDB db = null;
+    Options opt = null;
+    try {
+      String db_path_string =
+          dbFolder.getRoot().getAbsolutePath();
+      opt = new Options();
+      opt.setCreateIfMissing(true);
+      opt.setMergeOpr(new AppendMerge(new MergeOprOptions()));
+
+      db = RocksDB.open(opt, db_path_string);
+      // writing aa under key
+      db.put("key".getBytes(), "aa".getBytes());
+      // merge bb under key
+      db.merge("key".getBytes(), "bb".getBytes());
+      // merge cc under key
+      db.merge("key".getBytes(), "cc".getBytes());
+      // merge dd under key
+      db.merge("key".getBytes(), "dd".getBytes());
+      // merge ee under key
+      db.merge("key".getBytes(), "ee".getBytes());
+
+      byte[] value = db.get("key".getBytes());
+      String strValue = new String(value);
+      System.out.println("string \"" + strValue + "\"");
+      assertThat(strValue).isEqualTo("aa:bb:cc:dd:ee");
+    } finally {
+      if (db != null) {
+        db.close();
+      }
+      if (opt != null) {
+        opt.dispose();
+      }
+    }
+  }
+  
 /*
   @Test
   public void cFStringOption()
