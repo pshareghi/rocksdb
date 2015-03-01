@@ -131,7 +131,7 @@ BaseAssociativeMergeOprJniCallback::~BaseAssociativeMergeOprJniCallback() {
   // the env jvm->DetachCurrentThread();
 }
 
-AssoicativeMergeOprJniCallback::AssoicativeMergeOprJniCallback(
+AssociativeMergeOprJniCallback::AssociativeMergeOprJniCallback(
     JNIEnv* env, jobject jAssociativeMergeOpr,
     const MergeOprJniCallbackOptions* mopt) :
     BaseAssociativeMergeOprJniCallback(env, jAssociativeMergeOpr, mopt) {
@@ -140,7 +140,7 @@ AssoicativeMergeOprJniCallback::AssoicativeMergeOprJniCallback(
   m_jValueSlice = env->NewGlobalRef(SliceJni::construct0(env));
 }
 
-AssoicativeMergeOprJniCallback::~AssoicativeMergeOprJniCallback() {
+AssociativeMergeOprJniCallback::~AssociativeMergeOprJniCallback() {
   JNIEnv* m_env = getJniEnv();
   m_env->DeleteGlobalRef(m_jKeySlice);
   m_env->DeleteGlobalRef(m_jExistingValueSlice);

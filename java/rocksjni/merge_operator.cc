@@ -69,11 +69,25 @@ void Java_org_rocksdb_MergeOpr_createNewMergeOpr0
  * Method:    createNewAssociativeMergeOpr0
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_org_rocksdb_AssociativeMergeOpr_createNewAssociativeMergeOpr0
+void JNICALL Java_org_rocksdb_AssociativeMergeOpr_createNewAssociativeMergeOpr0
   (JNIEnv* env, jobject jobj, jlong mopt_handle) {
   const rocksdb::MergeOprJniCallbackOptions* mopt =
       reinterpret_cast<rocksdb::MergeOprJniCallbackOptions*>(mopt_handle);
-  const rocksdb::AssoicativeMergeOprJniCallback* m = new rocksdb::AssoicativeMergeOprJniCallback(
+  const rocksdb::AssociativeMergeOprJniCallback* m = new rocksdb::AssociativeMergeOprJniCallback(
+      env, jobj, mopt);
+  rocksdb::AbstractAssociativeMergeOprJni::setHandle(env, jobj, m);
+}
+
+/*
+ * Class:     org_rocksdb_DirectAssociativeMergeOpr
+ * Method:    createNewDirectAssociativeMergeOpr0
+ * Signature: (J)V
+ */
+void JNICALL Java_org_rocksdb_DirectAssociativeMergeOpr_createNewDirectAssociativeMergeOpr0
+  (JNIEnv* env, jobject jobj, jlong mopt_handle) {
+  const rocksdb::MergeOprJniCallbackOptions* mopt =
+      reinterpret_cast<rocksdb::MergeOprJniCallbackOptions*>(mopt_handle);
+  const rocksdb::DirectAssociativeMergeOprJniCallback* m = new rocksdb::DirectAssociativeMergeOprJniCallback(
       env, jobj, mopt);
   rocksdb::AbstractAssociativeMergeOprJni::setHandle(env, jobj, m);
 }

@@ -68,24 +68,9 @@ public abstract class DirectAssociativeMergeOpr extends DirectMergeOpr {
     return null;
   }
 
-  public abstract byte[] merge(Slice key,
-      Slice existingValue,
-      Slice value);
-  
-  /**
-   * Deletes underlying C++ comparator pointer.
-   *
-   * Note that this function should be called only after all RocksDB instances
-   * referencing the merge operator are closed. Otherwise an undefined behavior
-   * will occur.
-   */
-  @Override
-  protected void disposeInternal() {
-    assert (isInitialized());
-    disposeInternal(nativeHandle_);
-  }
-
-  private native void disposeInternal(long handle);
+  public abstract byte[] merge(DirectSlice key,
+      DirectSlice existingValue,
+      DirectSlice value);
   
   private native void createNewDirectAssociativeMergeOpr0(
       final long mergeOprOptionsHandle);
