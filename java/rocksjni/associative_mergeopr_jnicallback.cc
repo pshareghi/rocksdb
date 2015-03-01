@@ -61,6 +61,16 @@ bool BaseAssociativeMergeOprJniCallback::Merge(const Slice& key,
   // on performance.
   mtx_merge->Lock();
 
+  // Clear the *new_value for writing.
+  assert(new_value);
+  new_value->clear();
+
+  if (!existing_value) {
+    // No existing_value. Set *new_value = value
+    new_value->assign(value.data(), value.size());
+    return true;
+  }
+
   AbstractSliceJni::setHandle(m_env, m_jKeySlice, &key);
   AbstractSliceJni::setHandle(m_env, m_jExistingValueSlice, existing_value);
   AbstractSliceJni::setHandle(m_env, m_jValueSlice, &value);
@@ -78,15 +88,17 @@ bool BaseAssociativeMergeOprJniCallback::Merge(const Slice& key,
     // There was no exception. Great! Make sure merge result is not NULL
     if (jNewValue != NULL) {
       int len = m_env->GetArrayLength(jNewValue);
-      char* cppNewValue = new char[len];
+      char* cppNewValue = new char[len+1];
       m_env->GetByteArrayRegion(jNewValue, 0, len,
           reinterpret_cast<jbyte*>(cppNewValue));
+      cppNewValue[len] = '\0';
       new_value->assign(cppNewValue);
+
       delete cppNewValue;
+
       success = true;
     } else {
       // Merge result was NULL, merge failed
-      new_value->clear();
       success = false;
     }
 

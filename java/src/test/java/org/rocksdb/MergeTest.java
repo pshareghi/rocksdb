@@ -99,7 +99,8 @@ public class MergeTest {
         Slice value) {
       String str1 = new String(existingValue.data());
       String str2 = new String(value.data());
-      return (str1 + ":" + str2).getBytes();
+      String merged = str1 + ":" + str2;
+      return (merged).getBytes();
     }
   }
   
@@ -123,7 +124,6 @@ public class MergeTest {
 
       byte[] value = db.get("key".getBytes());
       String strValue = new String(value);
-      System.out.println("string \"" + strValue + "\"");
       assertThat(strValue).isEqualTo("aa:bb");
     } finally {
       if (db != null) {
@@ -156,7 +156,6 @@ public class MergeTest {
 
       byte[] value = db.get("key".getBytes());
       String strValue = new String(value);
-      System.out.println("string \"" + strValue + "\"");
       assertThat(strValue).isEqualTo("aa:bb:cc");
     } finally {
       if (db != null) {
@@ -179,7 +178,7 @@ public class MergeTest {
       opt = new Options();
       opt.setCreateIfMissing(true);
       opt.setMergeOpr(new AppendMerge(new MergeOprOptions()));
-
+      
       db = RocksDB.open(opt, db_path_string);
       // writing aa under key
       db.put("key".getBytes(), "aa".getBytes());
@@ -192,7 +191,6 @@ public class MergeTest {
 
       byte[] value = db.get("key".getBytes());
       String strValue = new String(value);
-      System.out.println("string \"" + strValue + "\"");
       assertThat(strValue).isEqualTo("aa:bb:cc:dd");
     } finally {
       if (db != null) {
@@ -230,7 +228,6 @@ public class MergeTest {
 
       byte[] value = db.get("key".getBytes());
       String strValue = new String(value);
-      System.out.println("string \"" + strValue + "\"");
       assertThat(strValue).isEqualTo("aa:bb:cc:dd:ee");
     } finally {
       if (db != null) {
