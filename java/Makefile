@@ -18,6 +18,7 @@ NATIVE_JAVA_CLASSES = org.rocksdb.AbstractComparator\
 	org.rocksdb.DirectComparator\
 	org.rocksdb.DirectMergeOpr\
 	org.rocksdb.DirectSlice\
+	org.rocksdb.DirectSliceDeque\
 	org.rocksdb.FlushOptions\
 	org.rocksdb.Filter\
 	org.rocksdb.GenericRateLimiterConfig\

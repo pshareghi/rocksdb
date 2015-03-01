@@ -332,7 +332,7 @@ public class MergeTest {
   }
   
   @Test
-  public void directergeOpr4()
+  public void directMergeOpr4()
       throws InterruptedException, RocksDBException {
     RocksDB db = null;
     Options opt = null;
