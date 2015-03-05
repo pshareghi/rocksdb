@@ -423,6 +423,46 @@ public class DbBenchmark {
       }
     }
   }
+  
+  class UpdateRandomTask extends BenchmarkTask {
+    public UpdateRandomTask(
+        int tid, long randSeed, long numEntries, long keyRange,
+        WriteOptions writeOpt) {
+      super(tid, randSeed, numEntries, keyRange);
+    }
+    
+    @Override public void runTask() throws RocksDBException {
+      if (numEntries_ != DbBenchmark.this.num_) {
+        stats_.message_.append(String.format(" (%d ops)", numEntries_));
+      }
+      byte[] key = new byte[keySize_];
+      byte[] value = new byte[valueSize_];
+
+      try {
+        for (long i = 0; i < numEntries_; ++i) {
+          getRandomKey(key, range);
+          int len = db_.get(key, value);
+          if (len != RocksDB.NOT_FOUND) {
+            stats_.found_++;
+            stats_.finishedSingleOp(keySize_ + valueSize_);
+          } else {
+            stats_.finishedSingleOp(keySize_);
+          }
+          DbBenchmark.this.gen_.generate(value);
+          db_.put(writeOpt_, key, value);
+          stats_.finishedSingleOp(keySize_ + valueSize_);
+          writeRateControl(i);
+          if (isFinished()) {
+            return;
+          }
+        }
+      } catch (InterruptedException e) {
+        // thread has been terminated.
+      }
+    }
+    
+    protected WriteOptions writeOpt_;
+  }
 
   public DbBenchmark(Map<Flag, Object> flags) throws Exception {
     benchmarks_ = (List<String>) flags.get(Flag.benchmarks);
@@ -476,6 +516,11 @@ public class DbBenchmark {
   private void prepareWriteOptions(WriteOptions options) {
     options.setSync((Boolean)flags_.get(Flag.sync));
     options.setDisableWAL((Boolean)flags_.get(Flag.disable_wal));
+  }
+  
+  private void prepareMergeOptions(MergeOptions options) {
+    options.setAdaptiveMutex(
+        (Boolean)flags_.get(Flag.merge_operator_adaptive_mutex));
   }
 
   private void prepareOptions(Options options) throws RocksDBException {
@@ -635,6 +680,8 @@ public class DbBenchmark {
       List<Callable<Stats>> bgTasks = new ArrayList<Callable<Stats>>();
       WriteOptions writeOpt = new WriteOptions();
       prepareWriteOptions(writeOpt);
+      MergeOptions mergeOpt = new MergeOptions();
+      prepareMergeOptions(mergeOpt);
       ReadOptions readOpt = new ReadOptions();
       prepareReadOptions(readOpt);
       int currentTaskId = 0;
@@ -695,6 +742,18 @@ public class DbBenchmark {
           destroyDb();
           open(options);
           break;
+        case "updaterandom":
+          tasks.add(new UpdateRandomTask(
+              currentTaskId++, randSeed_, num_, num_, writeOpt, 1));
+          break;
+        /*case "mergerandom":
+          tasks.add(new MergeRandomTask(
+              currentTaskId++, randSeed_, num_, num_, mergeOpt, 1));
+          break;
+        case "readrandommergerandom":
+          //TODO(pshareghi) implement
+          System.exit(1);
+          break;*/
         default:
           known = false;
           System.err.println("Unknown benchmark: " + benchmark);
@@ -919,6 +978,11 @@ public class DbBenchmark {
         "\t\treadwhilewriting -- measure the read performance of multiple readers\n" +
         "\t\t                   with a bg single writer.  The write rate of the bg\n" +
         "\t\t                   is capped by --writes_per_second.\n" +
+        "\t\tupdaterandom     -- N threads doing read-modify-write for random keys.\n" +
+        "\t\tmergerandom   -- same as updaterandom/appendrandom using merge" +
+        " operator. Must be used with merge_operator\n" +
+        "\t\treadrandommergerandom -- perform N random read-or-merge " +
+        "operations. Must be used with merge_operator\n" +
         "\tMeta Operations:\n" +
         "\t\tdelete            -- delete DB") {
       @Override public Object parseValue(String value) {
@@ -1480,8 +1544,23 @@ public class DbBenchmark {
       @Override public Object parseValue(String value) {
         return value;
       }
-    };
+    },
+    merge_operator(null, "The full cannonical name of the merge operator to"
+        + " use with the database. If a new merge operator is specified, be"
+        + " sure to use a fresh database.") {
+      @Override public Object parseValue(String value) {
+        return value;
+      }
+    },
+    merge_operator_adaptive_mutex(false, "Use adaptive mutex, which spins in"
+        + " the user space before resorting to kernel. This could reduce"
+        + " context switch when the mutex is not heavily contended.") {
+      @Override public Object parseValue(String value) {
+        return Boolean.valueOf(value);
+      }
+    },
 
+    ;
     private Flag(Object defaultValue, String desc) {
       defaultValue_ = defaultValue;
       desc_ = desc;
