@@ -424,11 +424,22 @@ public class DbBenchmark {
     }
   }
   
-  class UpdateRandomTask extends BenchmarkTask {
+  class UpdateRandomTask extends WriteTask {
     public UpdateRandomTask(
         int tid, long randSeed, long numEntries, long keyRange,
         WriteOptions writeOpt) {
-      super(tid, randSeed, numEntries, keyRange);
+      super(tid, randSeed, numEntries, keyRange, writeOpt, 1);
+    }
+    
+    public UpdateRandomTask(
+        int tid, long randSeed, long numEntries, long keyRange,
+        WriteOptions writeOpt, long maxWritesPerSecond) {
+      super(tid, randSeed, numEntries, keyRange, writeOpt, 1,
+          maxWritesPerSecond);      
+    }
+    
+    @Override protected void getKey(byte[] key, long id, long range) {
+      getRandomKey(key, range);
     }
     
     @Override public void runTask() throws RocksDBException {
@@ -440,13 +451,10 @@ public class DbBenchmark {
 
       try {
         for (long i = 0; i < numEntries_; ++i) {
-          getRandomKey(key, range);
+          getKey(key, i, keyRange_);
           int len = db_.get(key, value);
           if (len != RocksDB.NOT_FOUND) {
             stats_.found_++;
-            stats_.finishedSingleOp(keySize_ + valueSize_);
-          } else {
-            stats_.finishedSingleOp(keySize_);
           }
           DbBenchmark.this.gen_.generate(value);
           db_.put(writeOpt_, key, value);
@@ -460,8 +468,6 @@ public class DbBenchmark {
         // thread has been terminated.
       }
     }
-    
-    protected WriteOptions writeOpt_;
   }
 
   public DbBenchmark(Map<Flag, Object> flags) throws Exception {
@@ -518,10 +524,10 @@ public class DbBenchmark {
     options.setDisableWAL((Boolean)flags_.get(Flag.disable_wal));
   }
   
-  private void prepareMergeOptions(MergeOptions options) {
-    options.setAdaptiveMutex(
-        (Boolean)flags_.get(Flag.merge_operator_adaptive_mutex));
-  }
+//  private void prepareMergeOptions(MergeOptions options) {
+//    options.setAdaptiveMutex(
+//        (Boolean)flags_.get(Flag.merge_operator_adaptive_mutex));
+//  }
 
   private void prepareOptions(Options options) throws RocksDBException {
     if (!useExisting_) {
@@ -680,8 +686,8 @@ public class DbBenchmark {
       List<Callable<Stats>> bgTasks = new ArrayList<Callable<Stats>>();
       WriteOptions writeOpt = new WriteOptions();
       prepareWriteOptions(writeOpt);
-      MergeOptions mergeOpt = new MergeOptions();
-      prepareMergeOptions(mergeOpt);
+//      MergeOptions mergeOpt = new MergeOptions();
+//      prepareMergeOptions(mergeOpt);
       ReadOptions readOpt = new ReadOptions();
       prepareReadOptions(readOpt);
       int currentTaskId = 0;
@@ -744,7 +750,7 @@ public class DbBenchmark {
           break;
         case "updaterandom":
           tasks.add(new UpdateRandomTask(
-              currentTaskId++, randSeed_, num_, num_, writeOpt, 1));
+              currentTaskId++, randSeed_, num_, num_, writeOpt));
           break;
         /*case "mergerandom":
           tasks.add(new MergeRandomTask(
