@@ -27,7 +27,9 @@ public abstract class AbstractMergeOpr<T extends AbstractSlice> extends
    *
    * @return The name of this merge operator implementation
    */
-  public abstract String name();
+  public String name() {
+    return this.getClass().getName();
+  }
 
   /**
    * NOT implemented at the moment.
@@ -73,7 +75,7 @@ public abstract class AbstractMergeOpr<T extends AbstractSlice> extends
    */
   protected byte[] merge(T key,
       T existingValue,
-      T value) {
+      T value) throws RocksDBException {
     return null;
   }
 

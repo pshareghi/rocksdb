@@ -92,7 +92,7 @@ bool BaseAssociativeMergeOprJniCallback::Merge(const Slice& key,
       m_env->GetByteArrayRegion(jNewValue, 0, len,
           reinterpret_cast<jbyte*>(cppNewValue));
       cppNewValue[len] = '\0';
-      new_value->assign(cppNewValue);
+      new_value->assign(cppNewValue, len+1);
 
       delete cppNewValue;
 

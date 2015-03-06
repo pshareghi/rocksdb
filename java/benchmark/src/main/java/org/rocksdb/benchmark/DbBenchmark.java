@@ -21,6 +21,7 @@
  */
 package org.rocksdb.benchmark;
 
+import java.lang.reflect.Constructor;
 import java.lang.Runnable;
 import java.lang.Math;
 import java.io.File;
@@ -469,6 +470,48 @@ public class DbBenchmark {
       }
     }
   }
+  
+  class MergeRandomTask extends WriteTask {
+    public MergeRandomTask(
+        int tid, long randSeed, long numEntries, long keyRange,
+        WriteOptions writeOpt) {
+      super(tid, randSeed, numEntries, keyRange, writeOpt, 1);
+    }
+    
+    public MergeRandomTask(
+        int tid, long randSeed, long numEntries, long keyRange,
+        WriteOptions writeOpt, long maxWritesPerSecond) {
+      super(tid, randSeed, numEntries, keyRange, writeOpt, 1,
+          maxWritesPerSecond);      
+    }
+    
+    @Override protected void getKey(byte[] key, long id, long range) {
+      getRandomKey(key, range);
+    }
+    
+    @Override public void runTask() throws RocksDBException {
+      if (numEntries_ != DbBenchmark.this.num_) {
+        stats_.message_.append(String.format(" (%d ops)", numEntries_));
+      }
+      byte[] key = new byte[keySize_];
+      byte[] value = new byte[valueSize_];
+      
+      try {
+        for (long i = 0; i < numEntries_; ++i) {
+          getKey(key, i, keyRange_);
+          DbBenchmark.this.gen_.generate(value);
+          db_.merge(writeOpt_, key, value);
+          stats_.finishedSingleOp(keySize_ + valueSize_);
+          writeRateControl(i);
+          if (isFinished()) {
+            return;
+          }
+        }
+      } catch (InterruptedException e) {
+        // thread has been terminated.
+      }
+    }
+  }
 
   public DbBenchmark(Map<Flag, Object> flags) throws Exception {
     benchmarks_ = (List<String>) flags.get(Flag.benchmarks);
@@ -523,11 +566,6 @@ public class DbBenchmark {
     options.setSync((Boolean)flags_.get(Flag.sync));
     options.setDisableWAL((Boolean)flags_.get(Flag.disable_wal));
   }
-  
-//  private void prepareMergeOptions(MergeOptions options) {
-//    options.setAdaptiveMutex(
-//        (Boolean)flags_.get(Flag.merge_operator_adaptive_mutex));
-//  }
 
   private void prepareOptions(Options options) throws RocksDBException {
     if (!useExisting_) {
@@ -572,6 +610,22 @@ public class DbBenchmark {
                    .setCacheNumShardBits(
                       (Integer)flags_.get(Flag.cache_numshardbits));
       options.setTableFormatConfig(table_options);
+    }
+    String mergeOperatorClassName = (String)flags_.get(Flag.merge_operator);
+    if (mergeOperatorClassName != null) {
+      boolean useAdaptiveMutex = (Boolean)flags_.get(Flag.merge_operator_adaptive_mutex);
+      MergeOprOptions mergeOprOptions = new MergeOprOptions();
+      mergeOprOptions.setUseAdaptiveMutex(useAdaptiveMutex);
+      try {
+      Class<?> clazz = Class.forName(mergeOperatorClassName);
+      Constructor<?> constructor = clazz.getConstructor(MergeOprOptions.class);
+      MergeOpr mergeOperator = (MergeOpr) constructor.newInstance(mergeOprOptions);    
+      options.setMergeOpr(mergeOperator);
+      } catch (Exception ex) {
+        throw new RocksDBException(
+            "unable to intantiate the specified merge operator " +
+            mergeOperatorClassName, ex);
+      }
     }
     options.setWriteBufferSize(
         (Long)flags_.get(Flag.write_buffer_size));
@@ -686,8 +740,6 @@ public class DbBenchmark {
       List<Callable<Stats>> bgTasks = new ArrayList<Callable<Stats>>();
       WriteOptions writeOpt = new WriteOptions();
       prepareWriteOptions(writeOpt);
-//      MergeOptions mergeOpt = new MergeOptions();
-//      prepareMergeOptions(mergeOpt);
       ReadOptions readOpt = new ReadOptions();
       prepareReadOptions(readOpt);
       int currentTaskId = 0;
@@ -752,11 +804,11 @@ public class DbBenchmark {
           tasks.add(new UpdateRandomTask(
               currentTaskId++, randSeed_, num_, num_, writeOpt));
           break;
-        /*case "mergerandom":
+        case "mergerandom":
           tasks.add(new MergeRandomTask(
-              currentTaskId++, randSeed_, num_, num_, mergeOpt, 1));
+              currentTaskId++, randSeed_, num_, num_, writeOpt));
           break;
-        case "readrandommergerandom":
+      /*  case "readrandommergerandom":
           //TODO(pshareghi) implement
           System.exit(1);
           break;*/

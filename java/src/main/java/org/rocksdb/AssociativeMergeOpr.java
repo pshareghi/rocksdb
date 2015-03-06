@@ -69,7 +69,7 @@ public abstract class AssociativeMergeOpr extends MergeOpr {
   @Override
   public abstract byte[] merge(Slice key,
       Slice existingValue,
-      Slice value);
+      Slice value) throws RocksDBException;
 
   private native void createNewAssociativeMergeOpr0(
       final long mergeOprOptionsHandle);

@@ -70,7 +70,7 @@ public abstract class DirectAssociativeMergeOpr extends DirectMergeOpr {
 
   public abstract byte[] merge(DirectSlice key,
       DirectSlice existingValue,
-      DirectSlice value);
+      DirectSlice value) throws RocksDBException;
   
   private native void createNewDirectAssociativeMergeOpr0(
       final long mergeOprOptionsHandle);
