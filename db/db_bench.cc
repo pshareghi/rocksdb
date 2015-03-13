@@ -55,6 +55,7 @@ int main() {
 #include "util/xxhash.h"
 #include "hdfs/env_hdfs.h"
 #include "utilities/merge_operators.h"
+#include "utilities/merge_operators/bytesxor.h"
 
 using GFLAGS::ParseCommandLineFlags;
 using GFLAGS::RegisterFlagValidator;
@@ -81,6 +82,7 @@ DEFINE_string(benchmarks,
               "readwhilewriting,"
               "readrandomwriterandom,"
               "updaterandom,"
+              "xorupdaterandom,"
               "randomwithverify,"
               "fill100K,"
               "crc32c,"
@@ -118,6 +120,8 @@ DEFINE_string(benchmarks,
               "\tprefixscanrandom      -- prefix scan N times in random order\n"
               "\tupdaterandom  -- N threads doing read-modify-write for random "
               "keys\n"
+              "\txorupdaterandom  -- N threads doing read-XOR-write for "
+              "random keys\n"
               "\tappendrandom  -- N threads doing read-modify-write with "
               "growing values\n"
               "\tmergerandom   -- same as updaterandom/appendrandom using merge"
@@ -1597,6 +1601,8 @@ class Benchmark {
         method = &Benchmark::ReadRandomMergeRandom;
       } else if (name == Slice("updaterandom")) {
         method = &Benchmark::UpdateRandom;
+      } else if (name == Slice("xorupdaterandom")) {
+        method = &Benchmark::XORUpdateRandom;
       } else if (name == Slice("appendrandom")) {
         method = &Benchmark::AppendRandom;
       } else if (name == Slice("mergerandom")) {
@@ -3023,6 +3029,56 @@ class Benchmark {
       }
 
       Status s = db->Put(write_options_, key, gen.Generate(value_size_));
+      if (!s.ok()) {
+        fprintf(stderr, "put error: %s\n", s.ToString().c_str());
+        exit(1);
+      }
+      thread->stats.FinishedOps(nullptr, db, 1);
+    }
+    char msg[100];
+    snprintf(msg, sizeof(msg),
+             "( updates:%" PRIu64 " found:%" PRIu64 ")", readwrites_, found);
+    thread->stats.AddMessage(msg);
+  }
+
+  // Read-XOR-write for random keys. Xors the existing value with a randomly
+  // generated value, and stores the result. Assuming A in the array of bytes
+  // representing the existing value, we generate an array B of the same size,
+  // then compute C = A^B as C[i]=A[i]^B[i], and store C
+  void XORUpdateRandom(ThreadState* thread) {
+    ReadOptions options(FLAGS_verify_checksum, true);
+    RandomGenerator gen;
+    std::string existing_value;
+    int64_t found = 0;
+    Duration duration(FLAGS_duration, readwrites_);
+
+    std::unique_ptr<const char[]> key_guard;
+    Slice key = AllocateKey(&key_guard);
+    // the number of iterations is the larger of read_ or write_
+    while (!duration.Done(1)) {
+      DB* db = SelectDB(thread);
+      GenerateKeyFromInt(thread->rand.Next() % FLAGS_num, FLAGS_num, &key);
+
+      auto status = db->Get(options, key, &existing_value);
+      if (status.ok()) {
+        ++found;
+      } else if (!status.IsNotFound()) {
+        fprintf(stderr, "Get returned an error: %s\n",
+                status.ToString().c_str());
+        abort();
+      }
+
+      const char* existing_value_data = NULL;
+      if (status.ok()) {
+        existing_value_data = existing_value.data();
+      }
+
+      Slice& value = gen.Generate(value_size_);
+      std::string new_value;
+      BytesXOROperator::XorBytes(existing_value_data, value.data(),
+                                 value_size_, &new_value);
+
+      Status s = db->Put(write_options_, key, Slice(new_value));
       if (!s.ok()) {
         fprintf(stderr, "put error: %s\n", s.ToString().c_str());
         exit(1);

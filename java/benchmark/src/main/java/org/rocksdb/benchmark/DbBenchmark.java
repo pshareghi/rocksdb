@@ -469,7 +469,54 @@ public class DbBenchmark {
             stats_.found_++;
           }
           DbBenchmark.this.gen_.generate(value);
-          byte[] newValue = LongAddMergeOpr.sum(existingValue, value);
+          db_.put(writeOpt_, key, value);
+          stats_.finishedSingleOp(keySize_ + valueSize_);
+          writeRateControl(i);
+          if (isFinished()) {
+            return;
+          }
+        }
+      } catch (InterruptedException e) {
+        // thread has been terminated.
+      }
+    }
+  }
+  
+  class XORUpdateRandomTask extends WriteTask {
+    public XORUpdateRandomTask(
+        int tid, long randSeed, long numEntries, long keyRange,
+        WriteOptions writeOpt) {
+      super(tid, randSeed, numEntries, keyRange, writeOpt, 1);
+    }
+    
+    public XORUpdateRandomTask(
+        int tid, long randSeed, long numEntries, long keyRange,
+        WriteOptions writeOpt, long maxWritesPerSecond) {
+      super(tid, randSeed, numEntries, keyRange, writeOpt, 1,
+          maxWritesPerSecond);      
+    }
+    
+    @Override protected void getKey(byte[] key, long id, long range) {
+      getRandomKey(key, range);
+    }
+    
+    @Override public void runTask() throws RocksDBException {
+      if (numEntries_ != DbBenchmark.this.num_) {
+        stats_.message_.append(String.format(" (%d ops)", numEntries_));
+      }
+
+      byte[] key = new byte[keySize_];
+      byte[] value = new byte[valueSize_];
+      
+      try {
+        for (long i = 0; i < numEntries_; ++i) {
+          getKey(key, i, keyRange_);
+          byte[] existingValue = db_.get(key);
+          if (existingValue != null) {
+            stats_.found_++;
+          }
+          DbBenchmark.this.gen_.generate(value);
+          byte[] newValue = BytesXOROpr.xorBytes(existingValue, value);
           db_.put(writeOpt_, key, newValue);
           stats_.finishedSingleOp(keySize_ + valueSize_);
           writeRateControl(i);
@@ -831,6 +878,10 @@ public class DbBenchmark {
           tasks.add(new UpdateRandomTask(
               currentTaskId++, randSeed_, num_, num_, writeOpt));
           break;
+        case "xorupdaterandom":
+          tasks.add(new XORUpdateRandomTask(
+              currentTaskId++, randSeed_, num_, num_, writeOpt));
+          break;
         case "mergerandom":
           tasks.add(new MergeRandomTask(
               currentTaskId++, randSeed_, num_, num_, writeOpt));
@@ -1100,6 +1151,7 @@ public class DbBenchmark {
         "\t\t                   with a bg single writer.  The write rate of the bg\n" +
         "\t\t                   is capped by --writes_per_second.\n" +
         "\t\tupdaterandom     -- N threads doing read-modify-write for random keys.\n" +
+        "\t\txorupdaterandom     -- N threads doing read-XOR-write for random keys.\n" +
         "\t\tmergerandom   -- same as updaterandom/appendrandom using merge" +
         " operator. Must be used with merge_operator\n" +
         "\t\treadrandommergerandom -- perform N random read-or-merge " +
