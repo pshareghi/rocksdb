@@ -121,6 +121,68 @@ public class MergeTest {
   }
   
   @Test
+  public void xorMergeOpr2()
+      throws InterruptedException, RocksDBException {
+    RocksDB db = null;
+    Options opt = null;
+    try {
+      String db_path_string =
+          dbFolder.getRoot().getAbsolutePath();
+      opt = new Options();
+      opt.setCreateIfMissing(true);
+      opt.setMergeOpr(new BytesXOROpr(new MergeOprOptions()));
+
+      db = RocksDB.open(opt, db_path_string);
+      // writing max int value under key
+      db.put("key".getBytes(), new byte[]{1,1,1});
+      // merge 1 under key
+      db.merge("key".getBytes(), new byte[]{1,0,0});
+
+      byte[] value = db.get("key".getBytes());
+      assertThat(value).isEqualTo(new byte[]{0,1,1});
+    } finally {
+      if (db != null) {
+        db.close();
+      }
+      if (opt != null) {
+        opt.dispose();
+      }
+    }
+  }
+    
+  @Test
+  public void xorMergeOpr3() 
+      throws InterruptedException, RocksDBException {
+    RocksDB db = null;
+    Options opt = null;
+    try {
+      String db_path_string =
+          dbFolder.getRoot().getAbsolutePath();
+      opt = new Options();
+      opt.setCreateIfMissing(true);
+      opt.setMergeOpr(new BytesXOROpr(new MergeOprOptions()));
+
+      db = RocksDB.open(opt, db_path_string);
+      // writing max int value under key
+      db.put("key".getBytes(), new byte[]{1,1,1});
+      // merge 1 under key
+      db.merge("key".getBytes(), new byte[]{1,0,0});
+      // merge 1 under key
+      db.merge("key".getBytes(), new byte[]{1,0,1});
+
+      byte[] value = db.get("key".getBytes());
+      assertThat(value).isEqualTo(new byte[]{1,1,0});
+    } finally {
+      if (db != null) {
+        db.close();
+      }
+      if (opt != null) {
+        opt.dispose();
+      }
+    }
+  }
+  
+  @Test
   public void addMergeOpr2()
       throws InterruptedException, RocksDBException {
     RocksDB db = null;

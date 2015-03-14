@@ -516,7 +516,10 @@ public class DbBenchmark {
             stats_.found_++;
           }
           DbBenchmark.this.gen_.generate(value);
-          byte[] newValue = BytesXOROpr.xorBytes(existingValue, value);
+          byte[] newValue = value;
+          if (existingValue != null) {
+            newValue = BytesXOROpr.xorBytes(existingValue, value);
+          }
           db_.put(writeOpt_, key, newValue);
           stats_.finishedSingleOp(keySize_ + valueSize_);
           writeRateControl(i);
@@ -930,9 +933,10 @@ public class DbBenchmark {
           System.err.println(e);
         }
       }
-      FlushOptions flushOptions = new FlushOptions();
-      flushOptions.setWaitForFlush(true);
-      db_.flush(flushOptions);
+      printStats();
+//      FlushOptions flushOptions = new FlushOptions();
+//      flushOptions.setWaitForFlush(true);
+//      db_.flush(flushOptions);
       System.out.format("Disposing of writeOpt at %d...\n", System.currentTimeMillis());
       writeOpt.dispose();
       readOpt.dispose();
@@ -973,16 +977,15 @@ public class DbBenchmark {
   
 
   private void printHeader(Options options) {
-    int kKeySize = 16;
-    System.out.printf("Keys:     %d bytes each\n", kKeySize);
+    System.out.printf("Keys:     %d bytes each\n", keySize_);
     System.out.printf("Values:   %d bytes each (%d bytes after compression)\n",
         valueSize_,
         (int) (valueSize_ * compressionRatio_ + 0.5));
     System.out.printf("Entries:  %d\n", num_);
     System.out.printf("RawSize:  %.1f MB (estimated)\n",
-        ((double)(kKeySize + valueSize_) * num_) / SizeUnit.MB);
+        ((double)(keySize_ + valueSize_) * num_) / SizeUnit.MB);
     System.out.printf("FileSize:   %.1f MB (estimated)\n",
-        (((kKeySize + valueSize_ * compressionRatio_) * num_) / SizeUnit.MB));
+        (((keySize_ + valueSize_ * compressionRatio_) * num_) / SizeUnit.MB));
     System.out.format("Memtable Factory: %s%n", options.memTableFactoryName());
     System.out.format("Prefix:   %d bytes%n", prefixSize_);
     System.out.format("Compression: %s%n", compressionType_);
@@ -1076,6 +1079,11 @@ public class DbBenchmark {
   }
 
   private void printStats() {
+    try {
+      System.out.println(db_.getProperty("rocksdb.stats"));
+    } catch (RocksDBException ex) {
+      
+    }
   }
 
   static void printHelp() {

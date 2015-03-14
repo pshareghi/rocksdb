@@ -3,10 +3,10 @@
 ############################################
 # benchmarks  -- see each benchmark
 
-num=400000
+num=1000000
 reads=$num
 key_size=2
-value_size=$((2*1024))
+value_size=$((100*1024))
 
 # Number of concurrent threads to run for the benchmark.
 threads=2
@@ -16,10 +16,10 @@ threads=2
 ####   Statistics                       ####
 ############################################
 # Report database statistics (true/false)
-statistics=1
+statistics=true
 
 # Print histogram of operation timings (true/false)
-histogram=1
+histogram=true
 
 # a temp varibale that estimates the total size of an entry
 entry_size=$(($key_size+$value_size))
@@ -37,7 +37,11 @@ stats_per_interval=1
 ############################################
 ####   DB                               ####
 ############################################
-db="/home/pshareghi/workspace/rocksdb-bench/cpp/mergerandom_readrandom"
+db="/home/pshareghi/workspace/rocksdb-bench/java/mergerandom_readrandom"
+
+if [ ! -d "$DIRECTORY" ]; then
+  mkdir -p $db
+fi
 
 # use_existing_db  -- see each benchmark
 
@@ -150,11 +154,8 @@ hard_rate_limit=1.2
 ############################################
 ####  Non-documented                    ####
 ############################################
-# Not used, left here for backwards compatibility
-disable_seek_compaction=1
-
-# Allow reads to occur via mmap-ing files
-mmap_read=0
+# Allow reads to occur via mmap-ing files (true/false)
+mmap_read=true
 
 # Number of bytes to use as a cache of uncompressed data. Negative means
 # use default settings.
@@ -165,11 +166,11 @@ cache_size=1024
 # non-negative.
 cache_numshardbits=6
 
-# Verify checksum for every block read from storage
-verify_checksum=1
+# Verify checksum for every block read from storage (true/false)
+verify_checksum=true
 
-# If true, do not write WAL for write
-disable_wal=1
+# If true, do not write WAL for write (true/false)
+disable_wal=true
 
 # Algorithm to use to compress the database, default snappy
 compression_type=none
@@ -178,8 +179,8 @@ compression_type=none
 # size after compression
 compression_ratio=0.5
 
-# If true, do not wait until data is synced to disk
-disable_data_sync=1
+# If true, do not wait until data is synced to disk (true/false)
+disable_data_sync=true
 
 # Ignored. Left here for backward compatibility
 delete_obsolete_files_period_micros=3000000
@@ -190,7 +191,7 @@ delete_obsolete_files_period_micros=3000000
 min_level_to_compress=2
 
 # Sync all writes to disk (true/false)
-sync=0
+sync=false
 
 # same as max_open_files, but the benchmark parser expects open_files not max_open_files
 open_files=$max_open_files
@@ -200,22 +201,24 @@ open_files=$max_open_files
 ####  First set of benchmarks                        #####
 ##########################################################
 benchmarks=mergerandom
-merge_operator=bytesxor
-use_existing_db=0
+merge_operator=org.rocksdb.BytesXOROpr
+use_existing_db=true
 threads=1
 
+#cd ..
 STARTTIME=$(date +%s)
 echo "\n**************************************"
 echo "Executing benchmarks=$benchmarks....."
 echo "**************************************\n"
-parameters="--benchmarks=$benchmarks --num=$num --reads=$reads --key_size=$key_size --value_size=$value_size --threads=$threads --statistics=$statistics --histogram=$histogram --stats_interval=$stats_interval --stats_per_interval=$stats_per_interval --db=$db --use_existing_db=$use_existing_db --max_background_compactions=$max_background_compactions --max_background_flushes=$max_background_flushes --bloom_bits=$bloom_bits -block_size=$block_size --write_buffer_size=$write_buffer_size --max_write_buffer_number=$max_write_buffer_number --min_write_buffer_number_to_merge=$min_write_buffer_number_to_merge --level0_file_num_compaction_trigger=$level0_file_num_compaction_trigger --max_bytes_for_level_base=$max_bytes_for_level_base --max_bytes_for_level_multiplier=$max_bytes_for_level_multiplier --target_file_size_base=$target_file_size_base --target_file_size_multiplier=$target_file_size_multiplier --num_levels=$num_levels --max_grandparent_overlap_factor=$max_grandparent_overlap_factor --level0_slowdown_writes_trigger=$level0_slowdown_writes_trigger --level0_stop_writes_trigger=$level0_stop_writes_trigger --soft_rate_limit=$soft_rate_limit --hard_rate_limit=$hard_rate_limit --disable_seek_compaction=$disable_seek_compaction --mmap_read=$mmap_read --cache_size=$cache_size --cache_numshardbits=$cache_numshardbits --verify_checksum=$verify_checksum --disable_wal=$disable_wal --compression_type=$compression_type --compression_ratio=$compression_ratio --disable_data_sync=$disable_data_sync --delete_obsolete_files_period_micros=$delete_obsolete_files_period_micros --min_level_to_compress=$min_level_to_compress --sync=$sync --open_files=$open_files --merge_operator=$merge_operator"
+parameters="--benchmarks=$benchmarks --num=$num --reads=$reads --key_size=$key_size --value_size=$value_size --threads=$threads --statistics=$statistics --histogram=$histogram --stats_interval=$stats_interval --stats_per_interval=$stats_per_interval --db=$db --use_existing_db=$use_existing_db --max_background_compactions=$max_background_compactions --max_background_flushes=$max_background_flushes --bloom_bits=$bloom_bits --block_size=$block_size --write_buffer_size=$write_buffer_size --max_write_buffer_number=$max_write_buffer_number --min_write_buffer_number_to_merge=$min_write_buffer_number_to_merge --level0_file_num_compaction_trigger=$level0_file_num_compaction_trigger --max_bytes_for_level_base=$max_bytes_for_level_base --max_bytes_for_level_multiplier=$max_bytes_for_level_multiplier --target_file_size_base=$target_file_size_base --target_file_size_multiplier=$target_file_size_multiplier --num_levels=$num_levels --max_grandparent_overlap_factor=$max_grandparent_overlap_factor --level0_slowdown_writes_trigger=$level0_slowdown_writes_trigger --level0_stop_writes_trigger=$level0_stop_writes_trigger --soft_rate_limit=$soft_rate_limit --hard_rate_limit=$hard_rate_limit --mmap_read=$mmap_read --cache_size=$cache_size --cache_numshardbits=$cache_numshardbits --verify_checksum=$verify_checksum --disable_wal=$disable_wal --compression_type=$compression_type --compression_ratio=$compression_ratio --disable_data_sync=$disable_data_sync --delete_obsolete_files_period_micros=$delete_obsolete_files_period_micros --min_level_to_compress=$min_level_to_compress --sync=$sync --open_files=$open_files --merge_operator=$merge_operator"
 echo "Parameters:  $parameters\n"
-../db_bench $parameters
+./jdb_bench.sh $parameters
 ENDTIME=$(date +%s)
 echo "\n#########################"
 echo "Took $(($ENDTIME - $STARTTIME)) seconds to complete benchmarks=$benchmarks..."
 echo "DB size: $(du --block-size=1 $db)"
 echo "#########################\n\n"
+#cd benchmark
 
 
 
@@ -223,19 +226,20 @@ echo "#########################\n\n"
 ####  Second set of benchmark                        #####
 ##########################################################
 benchmarks=readrandom
-use_existing_db=1
+use_existing_db=true
 
+#cd ..
 STARTTIME=$(date +%s)
 echo "\n**************************************"
 echo "Executing benchmarks=$benchmarks....."
 echo "**************************************"
-parameters="--benchmarks=$benchmarks --num=$num --reads=$reads --key_size=$key_size --value_size=$value_size --threads=$threads --statistics=$statistics --histogram=$histogram --stats_interval=$stats_interval --stats_per_interval=$stats_per_interval --db=$db --use_existing_db=$use_existing_db --max_background_compactions=$max_background_compactions --max_background_flushes=$max_background_flushes --bloom_bits=$bloom_bits --block_size=$block_size --write_buffer_size=$write_buffer_size --max_write_buffer_number=$max_write_buffer_number --min_write_buffer_number_to_merge=$min_write_buffer_number_to_merge --level0_file_num_compaction_trigger=$level0_file_num_compaction_trigger --max_bytes_for_level_base=$max_bytes_for_level_base --max_bytes_for_level_multiplier=$max_bytes_for_level_multiplier --target_file_size_base=$target_file_size_base --target_file_size_multiplier=$target_file_size_multiplier --num_levels=$num_levels --max_grandparent_overlap_factor=$max_grandparent_overlap_factor --level0_slowdown_writes_trigger=$level0_slowdown_writes_trigger --level0_stop_writes_trigger=$level0_stop_writes_trigger --soft_rate_limit=$soft_rate_limit --hard_rate_limit=$hard_rate_limit --disable_seek_compaction=$disable_seek_compaction --mmap_read=$mmap_read --cache_size=$cache_size --cache_numshardbits=$cache_numshardbits --verify_checksum=$verify_checksum --disable_wal=$disable_wal --compression_type=$compression_type --compression_ratio=$compression_ratio --disable_data_sync=$disable_data_sync --delete_obsolete_files_period_micros=$delete_obsolete_files_period_micros --min_level_to_compress=$min_level_to_compress --sync=$sync --open_files=$open_files --merge_operator=$merge_operator"
+parameters="--benchmarks=$benchmarks --num=$num --reads=$reads --key_size=$key_size --value_size=$value_size --threads=$threads --statistics=$statistics --histogram=$histogram --stats_interval=$stats_interval --stats_per_interval=$stats_per_interval --db=$db --use_existing_db=$use_existing_db --max_background_compactions=$max_background_compactions --max_background_flushes=$max_background_flushes --bloom_bits=$bloom_bits --block_size=$block_size --write_buffer_size=$write_buffer_size --max_write_buffer_number=$max_write_buffer_number --min_write_buffer_number_to_merge=$min_write_buffer_number_to_merge --level0_file_num_compaction_trigger=$level0_file_num_compaction_trigger --max_bytes_for_level_base=$max_bytes_for_level_base --max_bytes_for_level_multiplier=$max_bytes_for_level_multiplier --target_file_size_base=$target_file_size_base --target_file_size_multiplier=$target_file_size_multiplier --num_levels=$num_levels --max_grandparent_overlap_factor=$max_grandparent_overlap_factor --level0_slowdown_writes_trigger=$level0_slowdown_writes_trigger --level0_stop_writes_trigger=$level0_stop_writes_trigger --soft_rate_limit=$soft_rate_limit --hard_rate_limit=$hard_rate_limit --mmap_read=$mmap_read --cache_size=$cache_size --cache_numshardbits=$cache_numshardbits --verify_checksum=$verify_checksum --disable_wal=$disable_wal --compression_type=$compression_type --compression_ratio=$compression_ratio --disable_data_sync=$disable_data_sync --delete_obsolete_files_period_micros=$delete_obsolete_files_period_micros --min_level_to_compress=$min_level_to_compress --sync=$sync --open_files=$open_files --merge_operator=$merge_operator"
 echo "Parameters:  $parameters\n"
-../db_bench $parameters
+./jdb_bench.sh $parameters
 ENDTIME=$(date +%s)
 echo "\n#########################"
 echo "Took $(($ENDTIME - $STARTTIME)) seconds to complete benchmarks=$benchmarks..."
 echo "DB size: $(du --block-size=1 $db)"
 echo "#########################\n\n"
-
+#cd benchmark
 
