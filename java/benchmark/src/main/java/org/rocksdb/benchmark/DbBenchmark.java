@@ -791,10 +791,10 @@ public class DbBenchmark {
     */
     
     //////////////Added by pshareghi
-    options.optimizeLevelStyleCompaction(100663296L / 4L);
-    options.setIncreaseParallelism(2);
-    options.setSoftRateLimit(1.1);
-    options.optimizeForPointLookup(10L);
+//    options.optimizeLevelStyleCompaction(100663296L / 4L);
+//    options.setIncreaseParallelism(2);
+//    options.setSoftRateLimit(1.1);
+//    options.optimizeForPointLookup(10L);
     
   }
 

@@ -3073,7 +3073,7 @@ class Benchmark {
         existing_value_data = existing_value.data();
       }
 
-      Slice& value = gen.Generate(value_size_);
+      Slice value = gen.Generate(value_size_);
       std::string new_value;
       BytesXOROperator::XorBytes(existing_value_data, value.data(),
                                  value_size_, &new_value);

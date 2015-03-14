@@ -3,10 +3,10 @@
 ############################################
 # benchmarks  -- see each benchmark
 
-num=400000
+num=18000000
 reads=$num
 key_size=2
-value_size=$((128*1024))
+value_size=$((4*1024))
 
 # Number of concurrent threads to run for the benchmark.
 threads=2
@@ -28,7 +28,7 @@ entry_size=$(($key_size+$value_size))
 # When 0 the interval grows over time. The formula below comes out of an
 # experiment where we had an 100K interval with 16B keys and 8B values.
 # interval*enty_size=100K*(16+8), hence interval = 2400K/entry_size
-stats_interval=$((2400000/$entry_size))
+stats_interval=$((240000000/$entry_size))
 
 # Reports additional stats per interval when this is greater than 0.
 stats_per_interval=1
@@ -38,6 +38,10 @@ stats_per_interval=1
 ####   DB                               ####
 ############################################
 db="/home/pshareghi/workspace/rocksdb-bench/cpp/updaterandom_readrandom"
+
+if [ ! -d "$db" ]; then
+  mkdir -p $db
+fi
 
 # use_existing_db  -- see each benchmark
 

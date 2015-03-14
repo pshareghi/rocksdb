@@ -39,7 +39,7 @@ stats_per_interval=1
 ############################################
 db="/home/pshareghi/workspace/rocksdb-bench/java/mergerandom_readrandom"
 
-if [ ! -d "$DIRECTORY" ]; then
+if [ ! -d "$db" ]; then
   mkdir -p $db
 fi
 
