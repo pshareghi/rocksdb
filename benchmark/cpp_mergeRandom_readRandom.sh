@@ -3,10 +3,10 @@
 ############################################
 # benchmarks  -- see each benchmark
 
-num=18000000
+num=$((1 * 1000 * 1000))
 reads=$num
 key_size=2
-value_size=$((4*1024))
+value_size=$((4 * 1024))
 
 # Number of concurrent threads to run for the benchmark.
 threads=2
@@ -168,7 +168,7 @@ mmap_read=0
 
 # Number of bytes to use as a cache of uncompressed data. Negative means
 # use default settings.
-cache_size=1024
+cache_size=$(($block_size * 16))
 
 # Number of shards for the block cache is 2^cache_numshardbits. Negative
 # means use default settings. This is applied only if FLAGS_cache_size is
