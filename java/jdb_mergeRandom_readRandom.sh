@@ -27,7 +27,7 @@ entry_size=$(($key_size+$value_size))
 # Stats are reported every N operations when this is greater than zero.
 # When 0 the interval grows over time. The formula below comes out of an
 # experiment where we had an 100K interval with 16B keys and 8B values.
-# interval*enty_size=100K*(16+8), hence interval = 2400K/entry_size
+# interval*entry_size=100K*(16+8), hence interval = 2400K/entry_size
 stats_interval=$((2400000/$entry_size))
 
 # Reports additional stats per interval when this is greater than 0.
@@ -73,7 +73,8 @@ max_open_files=100000
 
 # RocksDB packs user data in blocks. When reading a key-value pair from a
 # table file, an entire block is loaded into memory. 
-block_size=4096
+block_size=$(($entry_size * 16))
+
 
 ############################################
 ####   Flushing (memtables)             ####
@@ -83,7 +84,7 @@ write_buffer_size=$((1024 * 1024))
 
 # If the active memtable fills up and the total number of memtables is
 # larger than max_write_buffer_number we stall further writes
-max_write_buffer_number=4
+max_write_buffer_number=6
 
 # minimum number of memtables to be merged before flushing to storage
 min_write_buffer_number_to_merge=2
@@ -92,8 +93,12 @@ min_write_buffer_number_to_merge=2
 ############################################
 ####   Level Style Compaction           ####
 ############################################
+# Compation style:
+# 0 for "level style", 1 for "universal", 2 for "FIFO", 3 for "NONE"
+compaction_style=0
+
 # Once level 0 reaches this number of files, L0->L1 compaction is triggered
-level0_file_num_compaction_trigger=4
+level0_file_num_compaction_trigger=2
 
 # Note: size of L0 = write_buffer_size * min_write_buffer_number_to_merge * level0_file_num_compaction_trigger
 # total size of level 1. Recommended that this be around the size of level 0.
@@ -124,10 +129,11 @@ max_grandparent_overlap_factor=10
 ############################################
 ####   Universal Compaction             ####
 ############################################
+# see compaction_style above
+
 # max_size_amplification_percent -- Size amplification as defined by amount of additional storage needed (in percentage) to store a byte of data in the database.
 
 # compression_size_percent -- Percentage of data in the database that is compressed. Older data is compressed, newer data is not compressed. If set to -1 (default), all data is compressed.
-
 
 
 ############################################
@@ -167,7 +173,7 @@ cache_size=1024
 cache_numshardbits=6
 
 # Verify checksum for every block read from storage (true/false)
-verify_checksum=true
+verify_checksum=false
 
 # If true, do not write WAL for write (true/false)
 disable_wal=true
@@ -193,7 +199,7 @@ min_level_to_compress=2
 # Sync all writes to disk (true/false)
 sync=false
 
-# same as max_open_files, but the benchmark parser expects open_files not max_open_files
+# same as max_open_files, but the benchmark parser expects open_files, not max_open_files
 open_files=$max_open_files
 
 
