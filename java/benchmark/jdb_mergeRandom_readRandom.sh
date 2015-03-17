@@ -161,7 +161,7 @@ hard_rate_limit=1.2
 ####  Non-documented                    ####
 ############################################
 # Allow reads to occur via mmap-ing files (true/false)
-mmap_read=true
+mmap_read=false
 
 # Number of bytes to use as a cache of uncompressed data. Negative means
 # use default settings.
@@ -208,10 +208,10 @@ open_files=$max_open_files
 ##########################################################
 benchmarks=mergerandom
 merge_operator=org.rocksdb.BytesXOROpr
-use_existing_db=true
+use_existing_db=false
 threads=1
 
-#cd ..
+cd ..
 STARTTIME=$(date +%s)
 echo "\n**************************************"
 echo "Executing benchmarks=$benchmarks....."
@@ -224,7 +224,7 @@ echo "\n#########################"
 echo "Took $(($ENDTIME - $STARTTIME)) seconds to complete benchmarks=$benchmarks..."
 echo "DB size: $(du --block-size=1 $db)"
 echo "#########################\n\n"
-#cd benchmark
+cd benchmark
 
 
 
@@ -234,7 +234,7 @@ echo "#########################\n\n"
 benchmarks=readrandom
 use_existing_db=true
 
-#cd ..
+cd ..
 STARTTIME=$(date +%s)
 echo "\n**************************************"
 echo "Executing benchmarks=$benchmarks....."
@@ -247,5 +247,5 @@ echo "\n#########################"
 echo "Took $(($ENDTIME - $STARTTIME)) seconds to complete benchmarks=$benchmarks..."
 echo "DB size: $(du --block-size=1 $db)"
 echo "#########################\n\n"
-#cd benchmark
+cd benchmark
 

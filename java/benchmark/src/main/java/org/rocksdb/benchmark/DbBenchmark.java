@@ -555,6 +555,7 @@ public class DbBenchmark {
       if (numEntries_ != DbBenchmark.this.num_) {
         stats_.message_.append(String.format(" (%d ops)", numEntries_));
       }
+      
       byte[] key = new byte[keySize_];
       byte[] value = new byte[valueSize_];
       
@@ -934,9 +935,9 @@ public class DbBenchmark {
         }
       }
       printStats();
-//      FlushOptions flushOptions = new FlushOptions();
-//      flushOptions.setWaitForFlush(true);
-//      db_.flush(flushOptions);
+      FlushOptions flushOptions = new FlushOptions();
+      flushOptions.setWaitForFlush(true);
+      db_.flush(flushOptions);
       System.out.format("Disposing of writeOpt at %d...\n", System.currentTimeMillis());
       writeOpt.dispose();
       readOpt.dispose();
