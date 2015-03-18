@@ -3,6 +3,7 @@
 // LICENSE file in the root directory of this source tree. An additional grant
 // of patent rights can be found in the PATENTS file in the same directory.
 
+#include <algorithm>
 #include "bytesxor.h"
 
 namespace rocksdb {
@@ -23,26 +24,37 @@ bool BytesXOROperator::Merge(const Slice& key,
    return true;
   }
 
-  if (existing_value->size() != value.size()) {
-   return false;
-  }
-
-  XorBytes(existing_value->data(), value.data(), value.size(), new_value);
+  XorBytes(existing_value->data(), existing_value->size(),
+		  value.data(), value.size(), new_value);
 
   return true;
 }
 
-void BytesXOROperator::XorBytes(const char* array1, const char* array2, int len,
+void BytesXOROperator::XorBytes(const char* array1, int array1_len,
+                        const char* array2, int array2_len,
                         std::string* new_value) {
   assert(array1);
   assert(array2);
   assert(new_value);
   new_value->clear();
 
-  new_value->reserve(len);
+  int min_len = std::min(array1_len, array2_len);
+  int max_len = std::max(array1_len, array2_len);
 
-  for (int i = 0; i < len; i++) {
-    new_value->push_back(array1[i] ^ array2[i]);
+  new_value->resize(max_len);
+
+  for (int i = 0; i < min_len; i++) {
+    (*new_value)[i] = array1[i] ^ array2[i];
+  }
+
+  if (array1_len > array2_len) {
+	  for (int i = array2_len; i < array1_len; i++) {
+		  (*new_value)[i] = array1[i];
+      }
+  } else if (array2_len > array1_len) {
+	  for (int i = array1_len; i < array2_len; i++) {
+		  (*new_value)[i] = array2[i];
+	  }
   }
 }
 

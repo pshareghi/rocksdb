@@ -40,6 +40,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 import org.rocksdb.*;
 import org.rocksdb.util.SizeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -884,11 +885,11 @@ public class DbBenchmark {
           break;
         case "xorupdaterandom":
           tasks.add(new XORUpdateRandomTask(
-              currentTaskId++, randSeed_, num_, num_, writeOpt));
+              currentTaskId++, randSeed_, num_, num_, writeOpt, writesPerSeconds_));
           break;
         case "mergerandom":
           tasks.add(new MergeRandomTask(
-              currentTaskId++, randSeed_, num_, num_, writeOpt));
+              currentTaskId++, randSeed_, num_, num_, writeOpt, writesPerSeconds_));
           break;
         default:
           known = false;

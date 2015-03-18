@@ -3049,6 +3049,8 @@ class Benchmark {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
     std::string existing_value;
+	std::string new_value;
+
     int64_t found = 0;
     Duration duration(FLAGS_duration, readwrites_);
 
@@ -3068,21 +3070,23 @@ class Benchmark {
         abort();
       }
 
-      const char* existing_value_data = NULL;
-      if (status.ok()) {
-        existing_value_data = existing_value.data();
-      }
-
       Slice value = gen.Generate(value_size_);
-      std::string new_value;
-      BytesXOROperator::XorBytes(existing_value_data, value.data(),
-                                 value_size_, &new_value);
+	  if (status.ok()) {
+        BytesXOROperator::XorBytes(existing_value.data(), existing_value.size(),
+                                   value.data(), value.size(), &new_value);
+        Status s = db->Put(write_options_, key, Slice(new_value));
+        if (!s.ok()) {
+          fprintf(stderr, "put error: %s\n", s.ToString().c_str());
+          exit(1);
+        }
+	  } else {
+        Status s = db->Put(write_options_, key, value);
+        if (!s.ok()) {
+          fprintf(stderr, "put error: %s\n", s.ToString().c_str());
+          exit(1);
+        }
+	  }
 
-      Status s = db->Put(write_options_, key, Slice(new_value));
-      if (!s.ok()) {
-        fprintf(stderr, "put error: %s\n", s.ToString().c_str());
-        exit(1);
-      }
       thread->stats.FinishedOps(nullptr, db, 1);
     }
     char msg[100];

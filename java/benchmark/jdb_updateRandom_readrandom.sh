@@ -5,11 +5,14 @@
 
 num=$((1 * 1000 * 1000))
 reads=$num
-key_size=2
-value_size=$((4*1024))
+key_size=5
+value_size=$((1024))
+
+# max number of writes per second. Writes are throttled to not exceed this
+writes_per_second=-1
 
 # Number of concurrent threads to run for the benchmark.
-threads=2
+threads=1
 
 
 ############################################
@@ -216,7 +219,7 @@ STARTTIME=$(date +%s)
 echo "\n**************************************"
 echo "Executing benchmarks=$benchmarks....."
 echo "**************************************\n"
-parameters="--benchmarks=$benchmarks --num=$num --reads=$reads --key_size=$key_size --value_size=$value_size --threads=$threads --statistics=$statistics --histogram=$histogram --stats_interval=$stats_interval --stats_per_interval=$stats_per_interval --db=$db --use_existing_db=$use_existing_db --max_background_compactions=$max_background_compactions --max_background_flushes=$max_background_flushes --bloom_bits=$bloom_bits --block_size=$block_size --write_buffer_size=$write_buffer_size --max_write_buffer_number=$max_write_buffer_number --min_write_buffer_number_to_merge=$min_write_buffer_number_to_merge --level0_file_num_compaction_trigger=$level0_file_num_compaction_trigger --max_bytes_for_level_base=$max_bytes_for_level_base --max_bytes_for_level_multiplier=$max_bytes_for_level_multiplier --target_file_size_base=$target_file_size_base --target_file_size_multiplier=$target_file_size_multiplier --num_levels=$num_levels --max_grandparent_overlap_factor=$max_grandparent_overlap_factor --level0_slowdown_writes_trigger=$level0_slowdown_writes_trigger --level0_stop_writes_trigger=$level0_stop_writes_trigger --soft_rate_limit=$soft_rate_limit --hard_rate_limit=$hard_rate_limit --mmap_read=$mmap_read --cache_size=$cache_size --cache_numshardbits=$cache_numshardbits --verify_checksum=$verify_checksum --disable_wal=$disable_wal --compression_type=$compression_type --compression_ratio=$compression_ratio --disable_data_sync=$disable_data_sync --delete_obsolete_files_period_micros=$delete_obsolete_files_period_micros --min_level_to_compress=$min_level_to_compress --sync=$sync --open_files=$open_files"
+parameters="--benchmarks=$benchmarks --num=$num --reads=$reads --key_size=$key_size --value_size=$value_size --threads=$threads --writes_per_second=$writes_per_second --statistics=$statistics --histogram=$histogram --stats_interval=$stats_interval --stats_per_interval=$stats_per_interval --db=$db --use_existing_db=$use_existing_db --max_background_compactions=$max_background_compactions --max_background_flushes=$max_background_flushes --bloom_bits=$bloom_bits --block_size=$block_size --write_buffer_size=$write_buffer_size --max_write_buffer_number=$max_write_buffer_number --min_write_buffer_number_to_merge=$min_write_buffer_number_to_merge --level0_file_num_compaction_trigger=$level0_file_num_compaction_trigger --max_bytes_for_level_base=$max_bytes_for_level_base --max_bytes_for_level_multiplier=$max_bytes_for_level_multiplier --target_file_size_base=$target_file_size_base --target_file_size_multiplier=$target_file_size_multiplier --num_levels=$num_levels --max_grandparent_overlap_factor=$max_grandparent_overlap_factor --level0_slowdown_writes_trigger=$level0_slowdown_writes_trigger --level0_stop_writes_trigger=$level0_stop_writes_trigger --soft_rate_limit=$soft_rate_limit --hard_rate_limit=$hard_rate_limit --mmap_read=$mmap_read --cache_size=$cache_size --cache_numshardbits=$cache_numshardbits --verify_checksum=$verify_checksum --disable_wal=$disable_wal --compression_type=$compression_type --compression_ratio=$compression_ratio --disable_data_sync=$disable_data_sync --delete_obsolete_files_period_micros=$delete_obsolete_files_period_micros --min_level_to_compress=$min_level_to_compress --sync=$sync --open_files=$open_files"
 echo "Parameters:  $parameters\n"
 ./jdb_bench.sh $parameters
 ENDTIME=$(date +%s)

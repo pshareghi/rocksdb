@@ -5,7 +5,7 @@
 
 num=$((1 * 1000 * 1000))
 reads=$num
-key_size=2
+key_size=5
 value_size=$((4*1024))
 
 # Number of concurrent threads to run for the benchmark.

@@ -6,10 +6,10 @@
 num=$((1 * 1000 * 1000))
 reads=$num
 key_size=2
-value_size=$((4 * 1024))
+value_size=$((512))
 
 # Number of concurrent threads to run for the benchmark.
-threads=2
+threads=1
 
 
 ############################################
@@ -211,7 +211,7 @@ open_files=$max_open_files
 ##########################################################
 benchmarks=mergerandom
 merge_operator=bytesxor
-use_existing_db=0
+use_existing_db=1
 threads=1
 
 STARTTIME=$(date +%s)

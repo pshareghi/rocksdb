@@ -31,7 +31,8 @@ class BytesXOROperator : public AssociativeMergeOperator {
 
   // XORs the two array of bytes one byte at a time and stores the result
   // in new_value. len is the number of xored bytes, and the length of new_value
-  static void XorBytes(const char* array1, const char* array2, int len,
+  static void XorBytes(const char* array1, int array1_len,
+                        const char* array2, int array2_len,
                         std::string* new_value);
 
   virtual const char* Name() const override {

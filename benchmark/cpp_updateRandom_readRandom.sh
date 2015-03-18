@@ -6,10 +6,10 @@
 num=$((1 * 1000 * 1000))
 reads=$num
 key_size=2
-value_size=$((4*1024))
+value_size=$((512))
 
 # Number of concurrent threads to run for the benchmark.
-threads=2
+threads=1
 
 
 ############################################
@@ -210,8 +210,8 @@ open_files=$max_open_files
 ##########################################################
 ####  First set of benchmarks                        #####
 ##########################################################
-benchmarks=updaterandom
-use_existing_db=0
+benchmarks=xorupdaterandom
+use_existing_db=1
 threads=1
 
 STARTTIME=$(date +%s)
