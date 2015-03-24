@@ -175,7 +175,7 @@ resolve_test_deps:
 
 java_test: resolve_test_deps
 	mkdir -p $(TEST_CLASSES)
-	javac -cp $(MAIN_CLASSES):$(JAVA_TESTCLASSPATH) -d $(TEST_CLASSES)\
+	javac -encoding UTF-8 -cp $(MAIN_CLASSES):$(JAVA_TESTCLASSPATH) -d $(TEST_CLASSES)\
 		$(TEST_SRC)/org/rocksdb/test/*.java\
 		$(TEST_SRC)/org/rocksdb/util/*.java\
 		$(TEST_SRC)/org/rocksdb/*.java
