@@ -304,7 +304,8 @@ clean:
 	-rm -rf ios-x86/* ios-arm/*
 	-find . -name "*.[oda]" -exec rm {} \;
 	-find . -type f -regex ".*\.\(\(gcda\)\|\(gcno\)\)" -exec rm {} \;
-	-rm -rf bzip2* snappy* zlib*
+	-rm -rf bzip2* snappy* zlib* libzl4*
+
 tags:
 	ctags * -R
 	cscope -b `find . -name '*.cc'` `find . -name '*.h'`
@@ -592,6 +593,14 @@ else
 endif
 endif
 
+liblz4.a:
+	   -rm -rf lz4-r127
+	   curl -O https://codeload.github.com/Cyan4973/lz4/tar.gz/r127
+	   mv r127 lz4-r127.tar.gz
+	   tar xvzf lz4-r127.tar.gz 
+	   cd lz4-r127/lib && make CFLAGS='-fPIC' all
+	   cp lz4-r127/lib/liblz4.a .
+
 libz.a:
 	-rm -rf zlib-1.2.8
 	curl -O http://zlib.net/zlib-1.2.8.tar.gz
@@ -615,11 +624,11 @@ libsnappy.a:
 	cp snappy-1.1.1/.libs/libsnappy.a .
 
 
-rocksdbjavastatic: libz.a libbz2.a libsnappy.a
+rocksdbjavastatic: libz.a libbz2.a libsnappy.a liblz4.a
 	OPT="-fPIC -DNDEBUG -O2" $(MAKE) $(LIBRARY) -j
 	cd java;$(MAKE) javalib;
 	rm -f ./java/$(ROCKSDBJNILIB)
-	$(CXX) $(CXXFLAGS) -I./java/. $(JAVA_INCLUDE) -shared -fPIC -o ./java/$(ROCKSDBJNILIB) $(JNI_NATIVE_SOURCES) $(LIBOBJECTS) $(COVERAGEFLAGS) libz.a libbz2.a libsnappy.a
+	$(CXX) $(CXXFLAGS) -I./java/. $(JAVA_INCLUDE) -shared -fPIC -o ./java/$(ROCKSDBJNILIB) $(JNI_NATIVE_SOURCES) $(LIBOBJECTS) $(COVERAGEFLAGS) libz.a libbz2.a libsnappy.a liblz4.a
 	cd java;strip -S -x $(ROCKSDBJNILIB)
 	cd java;jar -cf $(ROCKSDB_JAR) org/rocksdb/*.class org/rocksdb/util/*.class HISTORY*.md $(ROCKSDBJNILIB)
 	cd java/javadoc;jar -cf ../$(ROCKSDB_JAVADOCS_JAR) *
