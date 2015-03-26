@@ -82,7 +82,7 @@ ColumnFamilyOptions::ColumnFamilyOptions()
       write_buffer_size(4 << 20),
       max_write_buffer_number(2),
       min_write_buffer_number_to_merge(1),
-      compression(kSnappyCompression),
+      compression(kLZ4Compression),
       prefix_extractor(nullptr),
       num_levels(7),
       level0_file_num_compaction_trigger(4),
@@ -558,7 +558,7 @@ ColumnFamilyOptions* ColumnFamilyOptions::OptimizeLevelStyleCompaction(
     if (i < 2) {
       compression_per_level[i] = kNoCompression;
     } else {
-      compression_per_level[i] = kSnappyCompression;
+      compression_per_level[i] = kLZ4Compression;
     }
   }
   return this;
